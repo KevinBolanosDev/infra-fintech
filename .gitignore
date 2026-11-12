@@ -1,0 +1,17 @@
+.claude
+
+# Secretos y configuración local (nunca al repositorio)
+.env
+.env.*
+!.env.example
+!.env.sample
+!.env.template
+*.pem
+*.key
+.claude/settings.local.json
+
+# Dependencias y salida generada
+node_modules/
+.turbo/
+dist/
+.next/
