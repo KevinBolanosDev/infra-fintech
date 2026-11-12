@@ -85,12 +85,12 @@ Verificado el 2026-11-12 leyendo el repositorio y consultando el registro de npm
 
 | Elemento | Estado | Consecuencia |
 | --- | --- | --- |
-| Node | Predeterminado `v20.20.2`; también hay `v22.13.0` instalado con nvm | Node 20 está fuera de soporte según el calendario oficial (fin de vida en abril de 2026; verificar en nodejs.org). Varias dependencias vigentes ya no lo soportan. Ver D-01 |
+| Node | **Resuelto (P-02):** instalado Node 24 (`.nvmrc` = `v24.22.3`); antes había `v20.20.2` y `v22.13.0` | Node 20 está fuera de soporte según el calendario oficial (fin de vida en abril de 2026; verificar en nodejs.org). Varias dependencias vigentes ya no lo soportan. Decidido D-01 = B (Node 24) |
 | pnpm | `12.18.0` (corepack disponible) | Versión nueva: validar sintaxis de workspaces y scripts de build con Context7, no de memoria |
 | **Docker** | CLI y Docker Compose `v2.39.1-desktop.1` instalados en Windows, pero **el motor no está corriendo** y **`docker` no está disponible dentro de la distro WSL** (integración desactivada) | **Bloquea las sub-fases 0.6 y siguientes que usan contenedores** (ver P-01). Las sub-fases 0.1–0.5 no lo necesitan |
 | `jq` | Instalado | Los hooks lo necesitan (fallan cerrado sin él) |
 | `gh` (GitHub CLI) | No instalado | La verificación de CI se hace desde el navegador de GitHub |
-| Remoto Git | Ninguno | Bloquea la verificación remota de 0.5 (ver P-03) |
+| Remoto Git | **Resuelto (P-03):** `origin` apunta al repositorio de GitHub del usuario | Ya se puede verificar CI remoto en 0.5; el `push` lo hace el usuario |
 
 ### 3.3 Permisos y hooks que condicionan al implementador
 
@@ -132,21 +132,28 @@ El implementador **no decide** nada de esta sección: se detiene y pide respuest
 
 | ID | Acción | Necesaria antes de | Estado |
 | --- | --- | --- | --- |
-| P-01 | Iniciar Docker Desktop y activar la integración con esta distro WSL (Settings, Resources, WSL integration). Comprobar con `docker version` dentro de WSL | 0.6 (y todo lo que use contenedores: 0.11 en adelante) | Pendiente |
-| P-02 | Dejar instalada la versión de Node que se decida en D-01 (`nvm install <versión>` y `nvm use`) | 0.1 | Pendiente |
-| P-03 | Crear el repositorio remoto en GitHub, añadir el remoto y hacer el primer push (ver D-04). Sin esto 0.5, 0.25 y 0.26 no se pueden verificar | 0.5 | Pendiente |
-| P-04 | (Opcional) Corregir el MCP de GitHub (token en variable de entorno, cabecera `Authorization`). Cambios en `.mcp.json` requieren revisión humana | Ninguna | Informativo |
+| P-01 | Iniciar Docker Desktop y activar la integración con esta distro WSL (Settings, Resources, WSL integration). Comprobar con `docker version` dentro de WSL | 0.6 (y todo lo que use contenedores: 0.11 en adelante) | **Resuelto** (el usuario confirmó que está listo; el implementador debe comprobar `docker version` al llegar a 0.6) |
+| P-02 | Dejar instalada la versión de Node que se decida en D-01 (`nvm install <versión>` y `nvm use`) | 0.1 | **Resuelto**: Node 24 instalado |
+| P-03 | Crear el repositorio remoto en GitHub, añadir el remoto y hacer el primer push (ver D-04). Sin esto 0.5, 0.25 y 0.26 no se pueden verificar | 0.5 | **Resuelto**: repositorio creado y remoto conectado |
+| P-04 | (Opcional) Corregir el MCP de GitHub (token en variable de entorno, cabecera `Authorization`). Cambios en `.mcp.json` requieren revisión humana | Ninguna | **Pospuesto**: el MCP de GitHub sigue roto; no depender de él |
 
 ### 4.2 Decisiones abiertas
 
-Orden cronológico. **Deben responderse antes de arrancar 0.1: D-01, D-02, D-03 y D-04.** El resto se responde antes de la sub-fase que bloquean.
+**Resueltas el 2026-11-12 (D-01 a D-04):**
+
+- **D-01 = B:** Node 24 (`.nvmrc` `v24.22.3`).
+- **D-02 = A:** NestJS 12 ESM + TypeScript 5.9.x, todo el monorepo en ESM. Las skills están escritas para Nest 11/Bun: el implementador adapta sus reglas a Nest 12, pnpm y Node, y consulta Context7 para APIs vigentes. Va en el ADR-0001.
+- **D-03 = A:** scope `@repo/*`.
+- **D-04 = d (usuario):** el usuario hace todos los commits y `push` y revisa todo manualmente. El implementador **no commitea nunca** (esto reemplaza la recomendación "commitea por orden explícita"). Rama/PR por sub-fase y commit de línea base quedan a criterio del usuario.
+
+Orden cronológico. **Deben responderse antes de arrancar 0.1: D-01, D-02, D-03 y D-04 (respondidas el 2026-11-12, ver abajo).** El resto se responde antes de la sub-fase que bloquean.
 
 | ID | Decisión | Opciones | Recomendación del planner | Bloquea |
 | --- | --- | --- | --- | --- |
 | D-01 | Versión de Node del proyecto (`.nvmrc`, `engines`, imágenes Docker) | A) Node 22 (ya hay 22.13.0 instalada; usar la última 22.x, porque `skills@1.8.1` pide >=22.20). B) Node 24 | **B (24)**: Node 22 entra en mantenimiento y su fin de vida cae hacia abril de 2027, en plena Fase 5. Node 20 queda descartado. Verificar el calendario en nodejs.org. Todas las dependencias de 3.4 admiten 24 | 0.1 |
 | D-02 | Runtime de backend | A) **NestJS 12 (ESM) + TypeScript 5.9.x**, todo el monorepo en ESM (`"type": "module"`, `Node16`, imports relativos con `.js`). B) NestJS 11 (serie `legacy`, CJS) + TypeScript 5.9.x | **A**: proyecto nuevo, Prisma 7 y Better Auth son ESM-first y Nest 11 ya está en `legacy`. Coste: las skills del repositorio están escritas para Nest 11 y el ecosistema (nestjs-zod, nestjs-pino) debe comprobarse con Nest 12. TypeScript 7 queda fuera por typescript-eslint. Es la decisión más difícil de revertir: va en el ADR-0001 | 0.1 |
 | D-03 | Scope npm de los paquetes internos | A) `@repo/*`. B) `@fintech/*`. C) otro | **A**: neutro, no depende del nombre del producto (aún pendiente según el plan). Renombrar después es un cambio masivo | 0.1 |
-| D-04 | Política de Git | a) ¿Se hace un commit de línea base con lo existente (`.claude/`, `.mcp.json`, `CLAUDE.md`, `docs/`, `.gitignore`)? b) ¿Una rama y un PR por sub-fase (`fase-0/0.N-<slug>`)? c) ¿Quién crea el remoto y hace `push`? d) ¿El implementador puede hacer commits locales o solo preparar cambios? | a) Sí, cuando lo ordenes. b) Sí, PR pequeños como pide CLAUDE.md. c) El usuario (`git push*` pide confirmación). d) El implementador commitea solo por orden explícita tras cada aprobación | 0.1 (línea base) y 0.5 (remoto) |
+| D-04 | Política de Git | a) ¿Se hace un commit de línea base con lo existente (`.claude/`, `.mcp.json`, `CLAUDE.md`, `docs/`, `.gitignore`)? b) ¿Una rama y un PR por sub-fase (`fase-0/0.N-<slug>`)? c) ¿Quién crea el remoto y hace `push`? d) ¿El implementador puede hacer commits locales o solo preparar cambios? | a) Sí, cuando lo ordenes. b) Sí, PR pequeños como pide CLAUDE.md. c) El usuario (`git push*` pide confirmación). d) ~~El implementador commitea solo por orden explícita~~ Resuelta: el usuario hace los commits | 0.1 (línea base) y 0.5 (remoto) |
 | D-05 | Dónde viven los módulos NestJS que usan `api` **y** `worker` (`clock`, `audit`, `outbox`, `idempotency`) | A) Nuevo paquete `packages/platform` (`@repo/platform`) para los transversales; los módulos de negocio nacen en `apps/api` y se extraen cuando el worker los necesite. B) Un paquete único con todos los módulos (transversales y de negocio); las apps quedan como capas finas de cableado. C) Todo en `apps/api` y el worker como segundo punto de entrada del mismo código | **A**: el plan dice "api y worker comparten la lógica de packages", pero **su lista de nueve paquetes no tiene dónde poner módulos NestJS compartidos** y una app no puede importar de otra. A y B coinciden en la Fase 0; la diferencia (dónde van los módulos de negocio) se decide al empezar la Fase 1 o 2. Cualquier opción exige ADR y actualizar `architecture-rules.md` (revisión humana). **En este plan la ruta `{PLATFORM}` significa `packages/platform` bajo la opción A** | 0.4 |
 | D-06 | Herramienta que hace cumplir las reglas de dependencia | A) `eslint-plugin-boundaries`. B) `dependency-cruiser`. C) Ambas | **A como principal**: corre dentro de ESLint, así que el hook `PostToolUse` le avisa al agente en el mismo instante en que escribe un import prohibido. B (Node >=22) se puede añadir después para ciclos y huérfanos | 0.4 |
 | D-07 | Reglas faltantes en `architecture-rules.md`: no hay fila para `observability`, `testing`, `config`, `api-client`, `ui` ni para el nuevo `platform` | Proponer, en un ADR, una fila para cada uno | Propuesta: `observability` (solo pino/OpenTelemetry/Sentry; sin `domain`, `db`, NestJS ni apps), `config` (nada), `testing` (puede importar `domain`, `contracts`, `db`, `platform`; nunca apps), `platform` (puede importar `domain`, `contracts`, `db`, `observability`, NestJS, BullMQ, ioredis; nunca apps, `web`, `ui`, `integrations`). Además confirmar como firmes las capas hexagonales de la sección 2 (hoy "inferido") | 0.4 |
@@ -170,7 +177,7 @@ Estados: **Pendiente** / **En Progreso** / **Completada** (cumple todos los crit
 
 | ID | Sub-fase | Bloque | Est. (h) | Depende de | Decisiones / prerrequisitos | RH | Diseño | Estado |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| 0.1 | Línea base del repositorio y toolchain | A | 2 | — | D-01, D-02, D-03, D-04, P-02 | No | No | Pendiente |
+| 0.1 | Línea base del repositorio y toolchain | A | 2 | — | D-01, D-02, D-03, D-04, P-02 | No | No | Completada |
 | 0.2 | Turborepo y configuración compartida | A | 3 | 0.1 | — | No | No | Pendiente |
 | 0.3 | Vitest y política de cobertura | A | 3 | 0.2 | — | No | No | Pendiente |
 | 0.4 | Reglas de dependencia ejecutables | A | 5 | 0.3 | D-05, D-06, D-07 | Sí | Sí | Pendiente |
@@ -226,7 +233,7 @@ Estados: **Pendiente** / **En Progreso** / **Completada** (cumple todos los crit
 10. **Seguridad del agente:** no leer ni imprimir secretos; no escribir `.env` literal en comandos (el hook lo bloquea; usar `.env.example`); datos sintéticos únicamente; no usar `--no-verify`; no ejecutar `prisma migrate reset/deploy` ni `db push` destructivo. No usar ningún MCP contra algo que no sea el Postgres de Docker (el conector de Supabase de la sesión **no se usa** en la Fase 0).
 11. **Migraciones:** nunca editar una migración ya versionada; flujo `pnpm prisma migrate dev --create-only --name <n>`, revisar el SQL generado, añadir el SQL manual (triggers, permisos, índices parciales) y solo entonces aplicar. Se usa la CLI (que pide confirmación) y **no** la herramienta `migrate-dev` del MCP, para que exista la puerta humana. El MCP `prisma-local` se usa solo para `migrate-status` y Studio. No hacer `git add` de una migración hasta que el usuario la apruebe (el hook `protect-files` vuelve inmutable lo que está en el índice).
 12. **Cambios en `.claude/**`, `.mcp.json`, `CLAUDE.md` y `docs/architecture-rules.md`:** solo si la sub-fase los pide, y siempre quedan pendientes de revisión humana explícita.
-13. **Git:** commits y pushes solo por orden explícita del usuario (D-04). Una sub-fase, una rama, un PR pequeño. Mensajes de commit en español, sin `--no-verify`.
+13. **Git:** el usuario hace todos los commits y pushes; el implementador nunca commitea (D-04 = d). Una sub-fase, una rama, un PR pequeño. Mensajes de commit en español, sin `--no-verify`.
 14. **Presupuesto:** si la ejecución supera el doble de la estimación, o aparece un bloqueo que cambia el diseño, parar y reportar antes de seguir.
 15. **Estado:** el implementador puede actualizar la columna Estado de la sección 5 a **En Progreso** y **Completada**. **Aprobada por usuario** solo se marca tras la aprobación explícita del usuario.
 16. **Idioma:** reportes, ADRs y comentarios de documentación en español; identificadores de código en inglés, salvo los nombres de dominio que fija el plan (`audit_log`, `outbox`, etc.).
@@ -1066,6 +1073,10 @@ Se completa durante la ejecución. Cada decisión, aprobación o cambio de alcan
 | Fecha | Sub-fase | Tipo (decisión, aprobación, cambio de alcance, bloqueo) | Detalle | Registrado por |
 | --- | --- | --- | --- | --- |
 | 2026-11-12 | — | Creación del plan | Versión 1.0 del plan de la Fase 0. Hallazgos de entorno registrados en la sección 3 | development-planner |
+| 2026-11-12 | 0.1 | Bloqueo | El `pnpm` del `PATH` en WSL es el ejecutable de Windows (`/mnt/c/.../npm/pnpm` → `pnpm.exe`, `process.platform = win32`, almacén en `C:\Users\...`). No sirve para instalar en el repositorio Linux. Falta decidir cómo proveer pnpm 12.18.0 en Linux. Al leer `packageManager`, ese pnpm descargó 12.18.0 y generó `pnpm-lock.yaml` (solo `packageManagerDependencies`) | backend-implementer |
+| 2026-11-12 | 0.1 | Hallazgo | Calendario oficial de Node: Node 24 en mantenimiento desde 2026-10-20 (fin de vida 2028-04-30); Node 26 es LTS activo desde 2026-10-28. Anotado en ADR-0001; D-01 se mantiene salvo que el usuario decida otra cosa | backend-implementer |
+| 2026-11-12 | 0.1 | Decisión | Usuario: Q-1 = A (pnpm 12.18.0 instalado en Linux con `npm install -g` sobre nvm; bloqueo resuelto); Q-2 corregido por el usuario (`.claude/` ya no se ignora, solo `settings.local.json`); Q-3 = `engineStrict: true`; Node 24 se mantiene y Node 26 LTS se evalúa en un ADR posterior. El lockfile no se pudo borrar (permiso de `rm` denegado): se comprobó que es idéntico al generado desde cero por el pnpm de Linux | backend-implementer |
+| 2026-11-12 | 0.1 | Completada | Criterios 1 a 6 en verde; `architect-reviewer` sin hallazgos BLOQUEANTE ni ALTA. Pendiente: auditoría y aprobación del usuario | backend-implementer |
 
 ---
 

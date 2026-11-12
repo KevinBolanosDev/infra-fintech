@@ -94,7 +94,7 @@ Las reglas se hacen cumplir con `eslint-plugin-boundaries` o `dependency-cruiser
 - `infrastructure/`: repositorios con Prisma, adaptadores de proveedores, colas.
 - `interface/`: controladores HTTP, receptores de webhooks y consumidores de colas.
 
-**Herramientas base:** pnpm, Turborepo con caché remota, TypeScript estricto, Node.js LTS, Docker y Docker Compose sobre Linux (ver la sección de contenedores).
+**Herramientas base:** pnpm, Turborepo con caché remota, TypeScript estricto, Node.js 24 LTS, NestJS 12 en ESM, paquetes internos bajo el scope `@repo/*`, Docker y Docker Compose sobre Linux (ver la sección de contenedores).
 
 **ORM:** Prisma 7. Desde la versión 7 el cliente se genera sin binario de Rust (compilador de consultas en TypeScript con el adaptador de pg), lo que simplifica las imágenes Docker. Migraciones con prisma migrate; lo que Prisma no expresa (triggers del ledger, permisos de solo inserción, índices parciales) va como SQL dentro de las mismas migraciones. Transacciones interactivas para el ledger y BigInt para el dinero.
 
@@ -108,7 +108,7 @@ Cada app tiene su `Dockerfile` en `apps/<app>/Dockerfile`, construido en tres et
 
 1. **Poda:** `turbo prune <app> --docker` copia solo el código y las dependencias que esa app usa del monorepo.
 2. **Construcción:** instala dependencias con `pnpm install --frozen-lockfile`, ejecuta `prisma generate` y compila TypeScript.
-3. **Ejecución:** imagen mínima con Node.js LTS sobre Debian slim, usuario sin privilegios, `HEALTHCHECK` y solo los archivos compilados.
+3. **Ejecución:** imagen mínima con Node.js 24 LTS sobre Debian slim, usuario sin privilegios, `HEALTHCHECK` y solo los archivos compilados.
 
 Se prefiere Debian slim a Alpine: evita incompatibilidades con librerías nativas (fuentes para PDF, criptografía). Como Prisma 7 ya no usa binario de Rust, no hay que configurar destinos de binario por sistema operativo.
 
