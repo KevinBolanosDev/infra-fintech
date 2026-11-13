@@ -14,4 +14,4 @@ Cada decisión de arquitectura aceptada deja un ADR corto en esta carpeta (lo pi
 | ADR | Título | Estado | Fecha |
 | --- | --- | --- | --- |
 | [0000](0000-plantilla.md) | Plantilla | — | — |
-| [0001](0001-toolchain-y-versiones.md) | Toolchain y versiones | Propuesto | 2026-11-12 |
+| [0001](0001-toolchain-y-versiones.md) | Toolchain y versiones | Aceptado | 2026-11-12 |

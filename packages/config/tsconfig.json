@@ -1,0 +1,13 @@
+{
+  "extends": "./tsconfig/node.json",
+  "compilerOptions": {
+    "allowJs": true,
+    "checkJs": true,
+    "noEmit": true,
+    // Las fábricas de vitest/ se consumen como .ts sin compilar (Node 24 las carga quitando los
+    // tipos): solo pueden usar sintaxis borrable, y entre ellas se importan por el export del
+    // propio paquete (@repo/config/vitest/base), nunca por ruta relativa.
+    "erasableSyntaxOnly": true
+  },
+  "include": ["**/*.ts", "eslint/**/*.js", "eslint.config.js"]
+}

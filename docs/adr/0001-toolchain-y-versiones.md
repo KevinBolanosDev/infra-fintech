@@ -2,7 +2,7 @@
 
 | Campo | Valor |
 | --- | --- |
-| Estado | Propuesto (pendiente de aprobación del usuario en el checkpoint de la sub-fase 0.1) |
+| Estado | Aceptado (aprobado por el usuario el 2026-11-12, checkpoint de la sub-fase 0.1) |
 | Fecha | 2026-11-12 |
 | Decisores | Usuario (dueño del proyecto) |
 | Sub-fase / fase | 0.1 (Fase 0) |
@@ -25,7 +25,7 @@ Hechos verificados el 2026-11-12:
 
 1. **Node.js 24** (D-01 = B). `.nvmrc` = `v24.22.3` (versión exacta, la instalada y la que usarán las imágenes Docker y CI). `engines.node` = `>=24.22.3 <25`: exige como mínimo la versión fijada y no rompe la instalación por un parche posterior de la misma serie.
 2. **pnpm 12.18.0** fijado en `packageManager` (`pnpm@12.18.0`, `latest` del registro). Workspace `apps/*` y `packages/*`. `engineStrict: true` en `pnpm-workspace.yaml`: instalar con un Node fuera de `engines.node` falla (no solo avisa). En WSL, pnpm se instala del lado Linux con `npm install -g pnpm@12.18.0` sobre el Node 24 de nvm (opción A de Q-1, 2026-11-12); el pnpm de Windows no se usa.
-3. **Scripts de instalación**: lista explícita en `allowBuilds` de `pnpm-workspace.yaml`: `@swc/core`, `esbuild`, `prisma`, `@prisma/engines`. Todo lo demás sigue bloqueado y `strictDepBuilds` queda en su valor por defecto (`true`), así que una dependencia nueva con scripts hace fallar la instalación hasta que alguien la revise.
+3. **Scripts de instalación**: lista explícita en `allowBuilds` de `pnpm-workspace.yaml`: `@swc/core`, `prisma`, `@prisma/engines` (`esbuild` se retiró en 0.3, ver "Correcciones"). Todo lo demás sigue bloqueado y `strictDepBuilds` queda en su valor por defecto (`true`), así que una dependencia nueva con scripts hace fallar la instalación hasta que alguien la revise.
 4. **NestJS 12 en ESM + TypeScript 5.9.x** (D-02 = A). Todo el monorepo es ESM: `"type": "module"` en la raíz y en cada paquete, `module`/`moduleResolution` `Node16` e imports relativos con extensión `.js`. Las skills del repositorio (escritas para Nest 11, Bun y Jest) se adaptan a Nest 12, pnpm, Node y Vitest.
 5. **Scope de paquetes internos `@repo/*`** (D-03 = A).
 6. **Versiones exactas** en todas las dependencias (sin `^` ni `~`). Prisma siempre con versión explícita de la serie 7; nunca la etiqueta `latest`. Pasar a Prisma 8 exige un ADR propio.
@@ -43,10 +43,15 @@ Solo se instala cada pieza en la sub-fase que la necesita (criterio "ninguna dep
 | turbo | `2.11.11` | 0.2 | |
 | eslint | `10.14.0` | 0.2 | Peer de typescript-eslint: `^8.57 \|\| ^9 \|\| ^10` |
 | typescript-eslint | `8.72.2` | 0.2 | |
-| prettier | `3.10.1` | 0.2 | |
-| vitest | `4.1.12` o `5.1.0` | 0.3 | Se decide en 0.3 con una prueba que lo respalde; ambas admiten Node 24 |
-| @swc/core | `1.16.22` | 0.3 | En `allowBuilds` |
-| esbuild | `0.28.2` | 0.3 (transitiva) | En `allowBuilds` |
+| prettier | `3.10.0` | 0.2 | Corregido el 2026-11-12 (antes `3.10.1`, ver "Correcciones") |
+| @eslint/js | `10.0.1` | 0.2 | `js.configs.recommended`; en ESLint 10 se instala aparte. Añadido en 0.2 |
+| eslint-plugin-simple-import-sort | `14.0.0` | 0.2 | Imports y exports ordenados con `--fix`. Añadido en 0.2 |
+| @types/node | `24.19.2` | 0.2 | Tipos de Node 24 para el perfil `tsconfig/node.json`. Añadido en 0.2 |
+| vitest, @vitest/coverage-v8 | `5.1.0` | 0.3 | Decidido en 0.3 (ver "Correcciones"); 4.1.12 descartada |
+| vite | `8.3.8` | 0.3 | Dependencia par de Vitest 5, fijada explícitamente. Usa rolldown/oxc; ya no trae esbuild |
+| unplugin-swc | `2.0.0` | 0.3 | Transforma TypeScript con SWC en Vitest (desactiva `oxc` de Vite) |
+| @swc/core | `1.16.22` | 0.3 | En `allowBuilds` (script `postinstall`) |
+| ~~esbuild~~ | — | — | Retirado de `allowBuilds` en 0.3: Vite 8 no lo instala |
 | @nestjs/core, @nestjs/common | `12.5.0` | 0.8 | Solo ESM; engines `>= 20` |
 | prisma, @prisma/client, @prisma/adapter-pg | `7.10.1` | 0.10 | `prisma` y `@prisma/engines` en `allowBuilds` |
 
@@ -75,6 +80,16 @@ Las demás versiones de la matriz 3.4 del plan (`nestjs-pino`, `@sentry/nestjs`,
 - No se puede usar el pnpm de Windows desde WSL: es `pnpm.exe` (`process.platform = win32`), instala binarios nativos de Windows y usa el almacén de Windows por rutas UNC. `which pnpm` debe apuntar a `~/.nvm/versions/node/v24.22.3/bin/pnpm`. Cada versión nueva de Node instalada con nvm necesita su propio `npm install -g pnpm@<versión>`.
 - `pnpm-lock.yaml` contiene `packageManagerDependencies` (pnpm 12.18.0 y sus binarios `@pnpm/exe.*` de todas las plataformas): es independiente de la plataforma y se comprobó que es idéntico al que genera el pnpm de Linux desde cero.
 - Revertir D-02 (volver a CJS) obligaría a tocar todos los `package.json`, `tsconfig` e imports: es la decisión más cara de deshacer.
+
+## Correcciones
+
+| Fecha | Sub-fase | Cambio | Motivo |
+| --- | --- | --- | --- |
+| 2026-11-12 | 0.2 | `prettier` `3.10.1` → `3.10.0` | `3.10.1` se publicó el 2026-11-12 07:06 UTC y no cumplía la espera mínima de pnpm 12 (`minimumReleaseAge` = 1440 min por defecto). pnpm añadió por su cuenta `minimumReleaseAgeExclude: [prettier@3.10.1]`; el usuario decidió no eximirla, bajar a `3.10.0` y quitar la excepción. Política: no se crean excepciones a `minimumReleaseAge` sin decisión explícita |
+| 2026-11-12 | 0.2 | Añadidos `@eslint/js`, `eslint-plugin-simple-import-sort` y `@types/node` | Decisiones del usuario Q-1 a Q-3 de la sub-fase 0.2. Alternativas descartadas para ordenar imports: `eslint-plugin-import-x` (requiere resolver de TypeScript, más lento, solapa con las fronteras de 0.4), `eslint-plugin-perfectionist` (más opinable), plugin de Prettier (fuera de ESLint, contra lo que pide el plan) |
+| 2026-11-13 | 0.3 | **Vitest 5.1.0** (con `@vitest/coverage-v8` 5.1.0 y `vite` 8.3.8 fijado) | Decisión del usuario (Q-1/Q-2 de 0.3). Vitest 4.1.12 (línea de mantenimiento `V4`) descartada para no migrar de versión mayor en plena Fase 1–2. Requisitos de Vitest 5 (Context7, guía de migración 5.0): Node ≥22.12 y Vite ≥6.4 como dependencia par. **Prueba que la respalda:** `pnpm test` en `@repo/config` (21 pruebas, cobertura v8 al 100 %), umbral incumplido → `ERROR: Coverage for lines (76.19%) does not meet global threshold (80%)` con código 1, y una prueba que transforma una clase decorada con las opciones SWC del perfil Nest y comprueba que emite `design:paramtypes` en ESM |
+| 2026-11-13 | 0.3 | `unplugin-swc` 2.0.0 + `@swc/core` 1.16.22; `esbuild` fuera de `allowBuilds` | Decisión del usuario (Q-3/Q-4 de 0.3), como fija el plan. Alternativa descartada: el transformador nativo de Vite 8 (oxc), sin verificar con metadatos de decoradores de Nest. `esbuild` no aparece en el árbol instalado (Vite 8 usa rolldown/oxc), así que su entrada sobraba |
+| 2026-11-13 | 0.3 | Excepción a "imports relativos con `.js`" (decisión 4) dentro de `packages/config/vitest/` | Las fábricas de Vitest se consumen como `.ts` sin compilar y Node 24 las carga quitando los tipos: `./base.js` no existe y `./base.ts` rompe el `tsc` de los consumidores (TS5097). Entre ellas se importan por el export del propio paquete (`@repo/config/vitest/base`) y el tsconfig de `@repo/config` exige `erasableSyntaxOnly`. Las dependencias de `@repo/config` (ESLint, Vitest, SWC) se resuelven desde la raíz, sin `peerDependencies`, por la decisión de instalar el toolchain una sola vez en la raíz |
 
 ## Verificación
 

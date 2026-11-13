@@ -11,6 +11,5 @@ engineStrict: true
 # Ver docs/adr/0001-toolchain-y-versiones.md.
 allowBuilds:
   '@swc/core': true # binario nativo de SWC (pruebas y compilación, sub-fase 0.3)
-  esbuild: true # binario nativo, dependencia transitiva de Vitest/Vite
   prisma: true # CLI de Prisma 7 (sub-fase 0.10)
   '@prisma/engines': true # motores de Prisma (sub-fase 0.10)

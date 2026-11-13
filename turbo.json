@@ -1,0 +1,45 @@
+{
+  "$schema": "./node_modules/turbo/schema.json",
+  "ui": "stream",
+  "envMode": "strict",
+  "tasks": {
+    "transit": {
+      "dependsOn": ["^transit"]
+    },
+    "build": {
+      "dependsOn": ["^build"],
+      "inputs": ["$TURBO_DEFAULT$", "!**/*.md", "!**/*.spec.ts", "!test/**"],
+      "outputs": ["dist/**"]
+    },
+    "typecheck": {
+      "dependsOn": ["transit", "^build"],
+      "outputs": []
+    },
+    "lint": {
+      "dependsOn": ["transit", "^build"],
+      "outputs": []
+    },
+    "lint:boundaries": {
+      "dependsOn": ["transit"],
+      "outputs": []
+    },
+    "test": {
+      "dependsOn": ["transit", "^build"],
+      "outputs": ["coverage/**"]
+    },
+    "test:int": {
+      "dependsOn": ["transit", "^build"],
+      "outputs": [],
+      "cache": false
+    },
+    "//#lint:root": {
+      "inputs": ["$TURBO_DEFAULT$", "!apps/**", "!packages/**"],
+      "outputs": []
+    },
+    "dev": {
+      "dependsOn": ["^build"],
+      "cache": false,
+      "persistent": true
+    }
+  }
+}
