@@ -23,7 +23,9 @@ pnpm install --frozen-lockfile
 
 ## Integración continua
 
-`.github/workflows/ci.yml` repite en GitHub Actions los controles locales, en jobs separados: `Lint` (incluye `lint:root` y formato), `Fronteras (lint:boundaries)`, `Tipos (typecheck)`, `Pruebas (test)`, `Build` y `Secretos (gitleaks)`. En un PR, las tareas por paquete corren solo en lo afectado (`--affected`); las de la raíz y `main` corren completas. Node y pnpm salen de `.nvmrc` y `packageManager` (`.github/actions/setup`). La caché remota de Turbo (autoalojada, D-08) se activa solo en los push a `main` y si el repositorio define `TURBO_API`, `TURBO_TEAM` y el secreto `TURBO_TOKEN`; en los PR nunca se expone el token.
+`.github/workflows/ci.yml` repite en GitHub Actions los controles locales, en jobs separados: `Lint` (incluye `lint:root` y formato), `Boundaries (lint:boundaries)`, `Typecheck`, `Tests`, `Build` y `Secrets (gitleaks)`. En un PR, las tareas por paquete corren solo en lo afectado (`--affected`); las de la raíz y `main` corren completas. Node y pnpm salen de `.nvmrc` y `packageManager` (`.github/actions/setup`). La caché remota de Turbo (autoalojada, D-08) se activa solo en los push a `main` y si el repositorio define `TURBO_API`, `TURBO_TEAM` y el secreto `TURBO_TOKEN`; en los PR nunca se expone el token.
+
+Falsos positivos de gitleaks: se ignoran uno a uno en `.gitleaksignore` por su huella exacta (`<commit>:<archivo>:<regla>:<línea>`), nunca por ruta ni por regla completa, y cada entrada se anota en la bitácora del plan.
 
 Equivalente local:
 
