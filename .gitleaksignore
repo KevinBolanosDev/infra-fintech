@@ -1,0 +1,9 @@
+# Excepciones de gitleaks: una huella exacta por hallazgo (<commit>:<archivo>:<regla>:<línea>).
+# Nunca se ignora una ruta ni una regla completa: una fuga real futura en esos archivos se detecta.
+# Cada entrada se documenta en docs/fase-0-plan-de-implementacion.md (bitácora).
+#
+# Falsos positivos (2026-11-18, sub-fase 0.5): ejemplo didáctico 'sk_test_abc123xyz' de la skill
+# externa nestjs-best-practices (fijada por commit, procedencia en .claude/skills/SOURCES.md; no se
+# edita). Introducidos en el commit c8242fa.
+c8242fa9762c0943a71296b62d7e8f0819abaa47:.claude/skills/nestjs-best-practices/rules/config-no-secrets.md:generic-api-key:34
+c8242fa9762c0943a71296b62d7e8f0819abaa47:.claude/skills/nestjs-best-practices/AGENTS.md:generic-api-key:2614

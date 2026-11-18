@@ -4,11 +4,11 @@
 | --- | --- |
 | Proyecto | Plataforma fintech de arriendos (`fintech-arriendos`) |
 | Fecha del plan | 2026-11-12 |
-| Versión | 1.0 (borrador para aprobación del usuario) |
+| Versión | 1.1 (2026-11-13: alineado con la v2 del plan maestro; el alcance de la Fase 0 no cambia) |
 | Elaborado por | `development-planner` |
 | Ejecuta | `backend-implementer` (`.claude/agents/backend-implementer.md`), una sub-fase a la vez |
-| Fuente de verdad del alcance | `docs/Plan de desarrollo — Plataforma fintech de arriendos (MVP y escala).md` (sección "Fases y cronograma", fila 0) |
-| Reglas que el plan respeta | `docs/architecture-rules.md`, `CLAUDE.md`, `docs/Skills y MCPs para el desarrollo con Claude Code.md` |
+| Fuente de verdad del alcance | `docs/plan-de-desarrollo-plataforma-fintech-de-arriendos-(MVP-y-escala).md`, v2 (sección "Fases y cronograma", fila 0) |
+| Reglas que el plan respeta | `docs/architecture-rules.md`, `CLAUDE.md`, `docs/skills-y-MCPs-para-el-desarrollo-con-claude-code.md` |
 
 ---
 
@@ -38,6 +38,8 @@
 
 **Dimensión.** 28 sub-fases, unas **112 horas de ejecución del agente** (108 sin el spike opcional) más el tiempo de revisión humana de cada checkpoint. El plan maestro asume dos personas en paralelo durante 1–2 semanas; con un solo implementador y aprobación sub-fase por sub-fase, el calendario realista es de **3–4 semanas**. Las estimaciones son del planner, sin datos históricos: se recalibran tras la sub-fase 0.3. Candidatas a diferir si hay que ajustarse al cronograma: 0.27 (spike), 0.21 (OpenTelemetry), 0.26 (Renovate).
 
+**Impacto de la v2 del plan maestro (2026-11-13).** El plan maestro cambió el gancho del producto al ahorro para compra de vivienda (Meta Casa) y agregó la fase 2B con cuatro módulos (`housing-parameters`, `home-goals`, `savings`, `rewards`). La Fase 0 es infraestructura y no depende del producto: **sus 28 sub-fases, criterios, estimaciones y compuerta quedan iguales.** Lo único que cambia aquí es la tabla de fuera de alcance (sección 2), una nota en el checkpoint de 0.7 y la bitácora. Donde este documento dice "Fase 2" se refiere a la fase 2A del plan maestro v2 (cobros y simulador); las fases 1, 3, 4 y 5 conservan su número.
+
 ---
 
 ## 2. Fuera de alcance (fases posteriores)
@@ -49,12 +51,13 @@ Nada de esta lista se implementa en la Fase 0, aunque aparezca en el plan maestr
 | `Money`, máquina de estados, reglas del ledger, reajuste IPC en `packages/domain` | 1 | En Fase 0 `domain` solo recibe puertos (`Clock`, `UnitOfWork`, `DomainEvent`) |
 | Módulo `ledger`, trigger de partida doble, `ledger-rules` | 1 | |
 | `auth` con Better Auth, Google, 2FA; `users`; `consents`; límite de peticiones; cifrado de columnas | 1 | En Fase 0 solo el spike opcional 0.27 |
-| `properties`, `leases`, `payout-destinations` | 1 | |
+| `properties`, `leases`, `payout-destinations` | 1 | Desde la v2 del plan maestro, `leases` incluye el contrato autodeclarado |
 | Skills propias `ledger-rules`, `prisma-migration-safety`, `audit-events`; subagentes `security-reviewer`, `db-reviewer` | 1 | |
-| `provider-sim` funcional (llave dinámica, webhooks, KYC, panel `/sim`), reloj avanzado por calendario, `seed:scenario` | 2 | En Fase 0 solo el esqueleto |
-| Paquete `integrations` con interfaces y adaptadores, variables `*_PROVIDER` | 2 | El directorio queda con `.gitkeep` |
-| `charges`, `provider-events`, `identity`, tareas del worker de negocio, tabla `jobs_dead_letter` | 2 | Ver D-15 |
-| `receipts`, `certificates`, `score`, `notifications`, `backoffice`, OpenAPI final, `api-client`, MCP de Sentry, skill `phase-gate` | 3 | |
+| `provider-sim` funcional (llave dinámica, webhooks, KYC, panel `/sim`), reloj avanzado por calendario, `seed:scenario` | 2A | En Fase 0 solo el esqueleto |
+| Paquete `integrations` con interfaces y adaptadores, variables `*_PROVIDER` | 2A | El directorio queda con `.gitkeep` |
+| `charges`, `provider-events`, `identity`, tareas del worker de negocio, tabla `jobs_dead_letter` | 2A | Ver D-15 |
+| Ahorro para vivienda: `housing-parameters`, `home-goals`, `savings`, `rewards`; ruta a la vivienda y máquina de estados del aporte en `packages/domain`; interfaz `SavingsProvider`; entidad de ahorro en `provider-sim`; tablas de ahorro y `regulatory_parameters` | 2B | Nuevo en la v2 del plan maestro. Nada de esto se adelanta en la Fase 0, ni siquiera tablas o puertos vacíos |
+| `receipts`, `certificates` (incluida la carpeta de vivienda), `score`, `notifications`, `backoffice`, OpenAPI final, `api-client`, MCP de Sentry, skill `phase-gate` | 3 | |
 | Despliegue a `staging`, hosting (Railway/Render), publicación de imágenes en un registro | 3 | La decisión de hosting se puede tomar en la semana 2 pero no se implementa |
 | `apps/web`, `packages/ui`, PWA, FSD, Playwright, Storybook | 4 | Las reglas FSD se escriben en 0.4 pero sin código web |
 | Pruebas de carga (k6), mutación (Stryker), seguridad externa, KMS | 4–5 | |
@@ -85,12 +88,12 @@ Verificado el 2026-11-12 leyendo el repositorio y consultando el registro de npm
 
 | Elemento | Estado | Consecuencia |
 | --- | --- | --- |
-| Node | Predeterminado `v20.20.2`; también hay `v22.13.0` instalado con nvm | Node 20 está fuera de soporte según el calendario oficial (fin de vida en abril de 2026; verificar en nodejs.org). Varias dependencias vigentes ya no lo soportan. Ver D-01 |
+| Node | **Resuelto (P-02):** instalado Node 24 (`.nvmrc` = `v24.22.3`); antes había `v20.20.2` y `v22.13.0` | Node 20 está fuera de soporte según el calendario oficial (fin de vida en abril de 2026; verificar en nodejs.org). Varias dependencias vigentes ya no lo soportan. Decidido D-01 = B (Node 24) |
 | pnpm | `12.18.0` (corepack disponible) | Versión nueva: validar sintaxis de workspaces y scripts de build con Context7, no de memoria |
 | **Docker** | CLI y Docker Compose `v2.39.1-desktop.1` instalados en Windows, pero **el motor no está corriendo** y **`docker` no está disponible dentro de la distro WSL** (integración desactivada) | **Bloquea las sub-fases 0.6 y siguientes que usan contenedores** (ver P-01). Las sub-fases 0.1–0.5 no lo necesitan |
 | `jq` | Instalado | Los hooks lo necesitan (fallan cerrado sin él) |
 | `gh` (GitHub CLI) | No instalado | La verificación de CI se hace desde el navegador de GitHub |
-| Remoto Git | Ninguno | Bloquea la verificación remota de 0.5 (ver P-03) |
+| Remoto Git | **Resuelto (P-03):** `origin` apunta al repositorio de GitHub del usuario | Ya se puede verificar CI remoto en 0.5; el `push` lo hace el usuario |
 
 ### 3.3 Permisos y hooks que condicionan al implementador
 
@@ -132,21 +135,38 @@ El implementador **no decide** nada de esta sección: se detiene y pide respuest
 
 | ID | Acción | Necesaria antes de | Estado |
 | --- | --- | --- | --- |
-| P-01 | Iniciar Docker Desktop y activar la integración con esta distro WSL (Settings, Resources, WSL integration). Comprobar con `docker version` dentro de WSL | 0.6 (y todo lo que use contenedores: 0.11 en adelante) | Pendiente |
-| P-02 | Dejar instalada la versión de Node que se decida en D-01 (`nvm install <versión>` y `nvm use`) | 0.1 | Pendiente |
-| P-03 | Crear el repositorio remoto en GitHub, añadir el remoto y hacer el primer push (ver D-04). Sin esto 0.5, 0.25 y 0.26 no se pueden verificar | 0.5 | Pendiente |
-| P-04 | (Opcional) Corregir el MCP de GitHub (token en variable de entorno, cabecera `Authorization`). Cambios en `.mcp.json` requieren revisión humana | Ninguna | Informativo |
+| P-01 | Iniciar Docker Desktop y activar la integración con esta distro WSL (Settings, Resources, WSL integration). Comprobar con `docker version` dentro de WSL | 0.6 (y todo lo que use contenedores: 0.11 en adelante) | **Resuelto** (el usuario confirmó que está listo; el implementador debe comprobar `docker version` al llegar a 0.6) |
+| P-02 | Dejar instalada la versión de Node que se decida en D-01 (`nvm install <versión>` y `nvm use`) | 0.1 | **Resuelto**: Node 24 instalado |
+| P-03 | Crear el repositorio remoto en GitHub, añadir el remoto y hacer el primer push (ver D-04). Sin esto 0.5, 0.25 y 0.26 no se pueden verificar | 0.5 | **Resuelto**: repositorio creado y remoto conectado |
+| P-04 | (Opcional) Corregir el MCP de GitHub (token en variable de entorno, cabecera `Authorization`). Cambios en `.mcp.json` requieren revisión humana | Ninguna | **Pospuesto**: el MCP de GitHub sigue roto; no depender de él |
 
 ### 4.2 Decisiones abiertas
 
-Orden cronológico. **Deben responderse antes de arrancar 0.1: D-01, D-02, D-03 y D-04.** El resto se responde antes de la sub-fase que bloquean.
+**Resueltas el 2026-11-12 (D-01 a D-04):**
+
+- **D-01 = B:** Node 24 (`.nvmrc` `v24.22.3`).
+- **D-02 = A:** NestJS 12 ESM + TypeScript 5.9.x, todo el monorepo en ESM. Las skills están escritas para Nest 11/Bun: el implementador adapta sus reglas a Nest 12, pnpm y Node, y consulta Context7 para APIs vigentes. Va en el ADR-0001.
+- **D-03 = A:** scope `@repo/*`.
+- **D-04 = d (usuario):** el usuario hace todos los commits y `push` y revisa todo manualmente. El implementador **no commitea nunca** (esto reemplaza la recomendación "commitea por orden explícita"). Rama/PR por sub-fase y commit de línea base quedan a criterio del usuario.
+
+**Resuelta el 2026-11-18 (transmitida por el coordinador):**
+
+- **D-08 = B:** caché remota de Turborepo **autoalojada**. Los detalles (servidor, alojamiento, almacenamiento, secretos) se definen en la 0.5 antes de implementarla.
+
+**Resueltas el 2026-11-13 (D-05 a D-07, transmitidas por el coordinador):**
+
+- **D-05 = A:** nuevo paquete `packages/platform` (`@repo/platform`) para los módulos NestJS transversales; los de negocio nacen en `apps/api`. Requiere ADR y actualizar `architecture-rules.md` (revisión humana).
+- **D-06 = A:** `eslint-plugin-boundaries` como herramienta principal de fronteras.
+- **D-07 = propuesta del planner:** filas nuevas en `architecture-rules.md` para `observability`, `config`, `testing` y `platform`, y confirmar como firmes las capas hexagonales de la sección 2. Va en ADR y requiere revisión humana.
+
+Orden cronológico. **Deben responderse antes de arrancar 0.1: D-01, D-02, D-03 y D-04 (respondidas el 2026-11-12, ver abajo).** El resto se responde antes de la sub-fase que bloquean.
 
 | ID | Decisión | Opciones | Recomendación del planner | Bloquea |
 | --- | --- | --- | --- | --- |
 | D-01 | Versión de Node del proyecto (`.nvmrc`, `engines`, imágenes Docker) | A) Node 22 (ya hay 22.13.0 instalada; usar la última 22.x, porque `skills@1.8.1` pide >=22.20). B) Node 24 | **B (24)**: Node 22 entra en mantenimiento y su fin de vida cae hacia abril de 2027, en plena Fase 5. Node 20 queda descartado. Verificar el calendario en nodejs.org. Todas las dependencias de 3.4 admiten 24 | 0.1 |
 | D-02 | Runtime de backend | A) **NestJS 12 (ESM) + TypeScript 5.9.x**, todo el monorepo en ESM (`"type": "module"`, `Node16`, imports relativos con `.js`). B) NestJS 11 (serie `legacy`, CJS) + TypeScript 5.9.x | **A**: proyecto nuevo, Prisma 7 y Better Auth son ESM-first y Nest 11 ya está en `legacy`. Coste: las skills del repositorio están escritas para Nest 11 y el ecosistema (nestjs-zod, nestjs-pino) debe comprobarse con Nest 12. TypeScript 7 queda fuera por typescript-eslint. Es la decisión más difícil de revertir: va en el ADR-0001 | 0.1 |
 | D-03 | Scope npm de los paquetes internos | A) `@repo/*`. B) `@fintech/*`. C) otro | **A**: neutro, no depende del nombre del producto (aún pendiente según el plan). Renombrar después es un cambio masivo | 0.1 |
-| D-04 | Política de Git | a) ¿Se hace un commit de línea base con lo existente (`.claude/`, `.mcp.json`, `CLAUDE.md`, `docs/`, `.gitignore`)? b) ¿Una rama y un PR por sub-fase (`fase-0/0.N-<slug>`)? c) ¿Quién crea el remoto y hace `push`? d) ¿El implementador puede hacer commits locales o solo preparar cambios? | a) Sí, cuando lo ordenes. b) Sí, PR pequeños como pide CLAUDE.md. c) El usuario (`git push*` pide confirmación). d) El implementador commitea solo por orden explícita tras cada aprobación | 0.1 (línea base) y 0.5 (remoto) |
+| D-04 | Política de Git | a) ¿Se hace un commit de línea base con lo existente (`.claude/`, `.mcp.json`, `CLAUDE.md`, `docs/`, `.gitignore`)? b) ¿Una rama y un PR por sub-fase (`fase-0/0.N-<slug>`)? c) ¿Quién crea el remoto y hace `push`? d) ¿El implementador puede hacer commits locales o solo preparar cambios? | a) Sí, cuando lo ordenes. b) Sí, PR pequeños como pide CLAUDE.md. c) El usuario (`git push*` pide confirmación). d) ~~El implementador commitea solo por orden explícita~~ Resuelta: el usuario hace los commits | 0.1 (línea base) y 0.5 (remoto) |
 | D-05 | Dónde viven los módulos NestJS que usan `api` **y** `worker` (`clock`, `audit`, `outbox`, `idempotency`) | A) Nuevo paquete `packages/platform` (`@repo/platform`) para los transversales; los módulos de negocio nacen en `apps/api` y se extraen cuando el worker los necesite. B) Un paquete único con todos los módulos (transversales y de negocio); las apps quedan como capas finas de cableado. C) Todo en `apps/api` y el worker como segundo punto de entrada del mismo código | **A**: el plan dice "api y worker comparten la lógica de packages", pero **su lista de nueve paquetes no tiene dónde poner módulos NestJS compartidos** y una app no puede importar de otra. A y B coinciden en la Fase 0; la diferencia (dónde van los módulos de negocio) se decide al empezar la Fase 1 o 2. Cualquier opción exige ADR y actualizar `architecture-rules.md` (revisión humana). **En este plan la ruta `{PLATFORM}` significa `packages/platform` bajo la opción A** | 0.4 |
 | D-06 | Herramienta que hace cumplir las reglas de dependencia | A) `eslint-plugin-boundaries`. B) `dependency-cruiser`. C) Ambas | **A como principal**: corre dentro de ESLint, así que el hook `PostToolUse` le avisa al agente en el mismo instante en que escribe un import prohibido. B (Node >=22) se puede añadir después para ciclos y huérfanos | 0.4 |
 | D-07 | Reglas faltantes en `architecture-rules.md`: no hay fila para `observability`, `testing`, `config`, `api-client`, `ui` ni para el nuevo `platform` | Proponer, en un ADR, una fila para cada uno | Propuesta: `observability` (solo pino/OpenTelemetry/Sentry; sin `domain`, `db`, NestJS ni apps), `config` (nada), `testing` (puede importar `domain`, `contracts`, `db`, `platform`; nunca apps), `platform` (puede importar `domain`, `contracts`, `db`, `observability`, NestJS, BullMQ, ioredis; nunca apps, `web`, `ui`, `integrations`). Además confirmar como firmes las capas hexagonales de la sección 2 (hoy "inferido") | 0.4 |
@@ -170,11 +190,11 @@ Estados: **Pendiente** / **En Progreso** / **Completada** (cumple todos los crit
 
 | ID | Sub-fase | Bloque | Est. (h) | Depende de | Decisiones / prerrequisitos | RH | Diseño | Estado |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| 0.1 | Línea base del repositorio y toolchain | A | 2 | — | D-01, D-02, D-03, D-04, P-02 | No | No | Pendiente |
-| 0.2 | Turborepo y configuración compartida | A | 3 | 0.1 | — | No | No | Pendiente |
-| 0.3 | Vitest y política de cobertura | A | 3 | 0.2 | — | No | No | Pendiente |
-| 0.4 | Reglas de dependencia ejecutables | A | 5 | 0.3 | D-05, D-06, D-07 | Sí | Sí | Pendiente |
-| 0.5 | CI base (calidad y secretos) | A | 3 | 0.4 | D-04, D-08, P-03 | No | No | Pendiente |
+| 0.1 | Línea base del repositorio y toolchain | A | 2 | — | D-01, D-02, D-03, D-04, P-02 | No | No | Aprobada por usuario |
+| 0.2 | Turborepo y configuración compartida | A | 3 | 0.1 | — | No | No | Aprobada por usuario |
+| 0.3 | Vitest y política de cobertura | A | 3 | 0.2 | — | No | No | Aprobada por usuario |
+| 0.4 | Reglas de dependencia ejecutables | A | 5 | 0.3 | D-05, D-06, D-07 | Sí | Sí | Aprobada por usuario |
+| 0.5 | CI base (calidad y secretos) | A | 3 | 0.4 | D-04, D-08, P-03 | No | No | En Progreso (pendiente: verificación remota tras el push del usuario y preguntas de D-08) |
 | 0.6 | Docker Compose, perfil `infra` | B | 4 | 0.1 | D-09, P-01 | No | Sí | Pendiente |
 | 0.7 | Logger y contexto de ejecución (`observability`) | C | 3 | 0.4 | — | No | No | Pendiente |
 | 0.8 | `apps/api` base: configuración, `/health` y endurecimiento HTTP | C | 4 | 0.7 | D-10 | No | No | Pendiente |
@@ -226,7 +246,7 @@ Estados: **Pendiente** / **En Progreso** / **Completada** (cumple todos los crit
 10. **Seguridad del agente:** no leer ni imprimir secretos; no escribir `.env` literal en comandos (el hook lo bloquea; usar `.env.example`); datos sintéticos únicamente; no usar `--no-verify`; no ejecutar `prisma migrate reset/deploy` ni `db push` destructivo. No usar ningún MCP contra algo que no sea el Postgres de Docker (el conector de Supabase de la sesión **no se usa** en la Fase 0).
 11. **Migraciones:** nunca editar una migración ya versionada; flujo `pnpm prisma migrate dev --create-only --name <n>`, revisar el SQL generado, añadir el SQL manual (triggers, permisos, índices parciales) y solo entonces aplicar. Se usa la CLI (que pide confirmación) y **no** la herramienta `migrate-dev` del MCP, para que exista la puerta humana. El MCP `prisma-local` se usa solo para `migrate-status` y Studio. No hacer `git add` de una migración hasta que el usuario la apruebe (el hook `protect-files` vuelve inmutable lo que está en el índice).
 12. **Cambios en `.claude/**`, `.mcp.json`, `CLAUDE.md` y `docs/architecture-rules.md`:** solo si la sub-fase los pide, y siempre quedan pendientes de revisión humana explícita.
-13. **Git:** commits y pushes solo por orden explícita del usuario (D-04). Una sub-fase, una rama, un PR pequeño. Mensajes de commit en español, sin `--no-verify`.
+13. **Git:** el usuario hace todos los commits y pushes; el implementador nunca commitea (D-04 = d). Una sub-fase, una rama, un PR pequeño. Mensajes de commit en español, sin `--no-verify`.
 14. **Presupuesto:** si la ejecución supera el doble de la estimación, o aparece un bloqueo que cambia el diseño, parar y reportar antes de seguir.
 15. **Estado:** el implementador puede actualizar la columna Estado de la sección 5 a **En Progreso** y **Completada**. **Aprobada por usuario** solo se marca tras la aprobación explícita del usuario.
 16. **Idioma:** reportes, ADRs y comentarios de documentación en español; identificadores de código en inglés, salvo los nombres de dominio que fija el plan (`audit_log`, `outbox`, etc.).
@@ -248,7 +268,7 @@ Estados: **Pendiente** / **En Progreso** / **Completada** (cumple todos los crit
 
 - **Scope y nombres (D-03 = A):** `@repo/config`, `@repo/domain`, `@repo/contracts`, `@repo/db`, `@repo/observability`, `@repo/testing`, `@repo/platform` (D-05 = A), `@repo/api`, `@repo/worker`, `@repo/provider-sim`.
 - **`{PLATFORM}`** = `packages/platform/src`. Si D-05 se resuelve distinto, se reubican esas rutas y la sub-fase 0.4 lo refleja en `architecture-rules.md`.
-- **Módulo de ES (D-02 = A):** `"type": "module"` en todos los paquetes, `module`/`moduleResolution` `Node16`, imports relativos con extensión `.js`.
+- **Módulo de ES (D-02 = A):** `"type": "module"` en todos los paquetes, `module`/`moduleResolution` `Node16`, imports relativos con extensión `.js`. Excepción (0.3, ADR-0001 "Correcciones"): las fábricas `.ts` de `packages/config/vitest/` se importan entre sí por el export del propio paquete.
 - **Estructura de un módulo NestJS de negocio o transversal:** `domain/`, `application/`, `infrastructure/`, `interface/` (se omiten las capas que no aplican; por ejemplo `audit` no tiene `interface/` en la Fase 0). Los módulos puramente técnicos (`config`, `health`) no llevan las cuatro capas: se documenta en el ADR-0003.
 - **Puertos puros en `@repo/domain`:** `Clock`, `UnitOfWork`, `DomainEvent`. Las implementaciones viven en `{PLATFORM}`.
 - **Scripts de la raíz:** `lint`, `lint:boundaries`, `lint:format`, `typecheck`, `test`, `test:int`, `build`, `dev`. Las tareas de Turbo: `build`, `typecheck`, `lint`, `lint:boundaries`, `test`, `test:int`, `db:generate`, `dev`.
@@ -447,7 +467,7 @@ Estados: **Pendiente** / **En Progreso** / **Completada** (cumple todos los crit
   pnpm turbo run lint typecheck test --filter=@repo/observability
   pnpm lint:boundaries
   ```
-- **Checkpoint de revisión humana:** revisar la lista de claves enmascaradas contra el plan (documento, correo, teléfono, tokens); proponer claves adicionales propias del dominio.
+- **Checkpoint de revisión humana:** revisar la lista de claves enmascaradas contra el plan (documento, correo, teléfono, tokens); proponer claves adicionales propias del dominio. Candidatas desde la v2 del plan maestro, a decidir aquí: ingreso y datos del hogar, identificador del producto de ahorro y llave Bre-B del dueño.
 - **Riesgos / decisiones abiertas:** el enmascarado por nombre de clave no atrapa datos personales en cadenas libres; se documenta como límite conocido.
 
 #### SUB-FASE 0.8 — `apps/api` base: configuración, `/health` y endurecimiento HTTP
@@ -1056,6 +1076,7 @@ Solo con todo marcado se autoriza el inicio de la Fase 1.
 | Sin remoto de GitHub no se puede cerrar 0.5, 0.25 ni 0.26 | La compuerta queda abierta | Media | P-03 temprano; D-04 |
 | El agente no puede crear `.env` ni cambiar la configuración de GitHub | Pasos manuales del usuario | Cierta | Documentados en cada checkpoint y en `docs/gobernanza-del-repositorio.md` |
 | El conocimiento del modelo sobre pnpm 12, Nest 12 y Node 24 es limitado | APIs inventadas o desactualizadas | Media | Regla de Context7 obligatoria; pruebas reales antes de ADR |
+| El nuevo enfoque del producto (v2 del plan maestro) tienta a adelantar piezas de ahorro en la Fase 0 | Alcance inflado y compuerta retrasada | Baja | Fila 2B en la sección 2; la regla 5 de la sección 6 (no ampliar el alcance) aplica igual |
 
 ---
 
@@ -1066,6 +1087,39 @@ Se completa durante la ejecución. Cada decisión, aprobación o cambio de alcan
 | Fecha | Sub-fase | Tipo (decisión, aprobación, cambio de alcance, bloqueo) | Detalle | Registrado por |
 | --- | --- | --- | --- | --- |
 | 2026-11-12 | — | Creación del plan | Versión 1.0 del plan de la Fase 0. Hallazgos de entorno registrados en la sección 3 | development-planner |
+| 2026-11-12 | 0.1 | Bloqueo | El `pnpm` del `PATH` en WSL es el ejecutable de Windows (`/mnt/c/.../npm/pnpm` → `pnpm.exe`, `process.platform = win32`, almacén en `C:\Users\...`). No sirve para instalar en el repositorio Linux. Falta decidir cómo proveer pnpm 12.18.0 en Linux. Al leer `packageManager`, ese pnpm descargó 12.18.0 y generó `pnpm-lock.yaml` (solo `packageManagerDependencies`) | backend-implementer |
+| 2026-11-12 | 0.1 | Hallazgo | Calendario oficial de Node: Node 24 en mantenimiento desde 2026-10-20 (fin de vida 2028-04-30); Node 26 es LTS activo desde 2026-10-28. Anotado en ADR-0001; D-01 se mantiene salvo que el usuario decida otra cosa | backend-implementer |
+| 2026-11-12 | 0.1 | Decisión | Usuario: Q-1 = A (pnpm 12.18.0 instalado en Linux con `npm install -g` sobre nvm; bloqueo resuelto); Q-2 corregido por el usuario (`.claude/` ya no se ignora, solo `settings.local.json`); Q-3 = `engineStrict: true`; Node 24 se mantiene y Node 26 LTS se evalúa en un ADR posterior. El lockfile no se pudo borrar (permiso de `rm` denegado): se comprobó que es idéntico al generado desde cero por el pnpm de Linux | backend-implementer |
+| 2026-11-12 | 0.1 | Completada | Criterios 1 a 6 en verde; `architect-reviewer` sin hallazgos BLOQUEANTE ni ALTA. Pendiente: auditoría y aprobación del usuario | backend-implementer |
+| 2026-11-12 | 0.1 | Aprobación | El usuario aprueba la 0.1 ("Aprobado, y continuemos con 0.2"). ADR-0001 pasa a Aceptado | backend-implementer |
+| 2026-11-12 | 0.2 | Decisión | Usuario: Q-1 = `eslint-plugin-simple-import-sort@14.0.0`; Q-2 = `@eslint/js@10.0.1` en la raíz; Q-3 = `@types/node@24.19.2` en la raíz; Q-4 = B | backend-implementer |
+| 2026-11-12 | 0.2 | Corrección | ADR-0001: `prettier` pasa de `3.10.1` a `3.10.0` (la 3.10.1 tenía menos de 24 h y pnpm la había eximido sola con `minimumReleaseAgeExclude`). Se quitó la excepción de `pnpm-workspace.yaml`; `pnpm install --frozen-lockfile` pasa la verificación de cadena de suministro sin excepciones. Nota en la sección "Correcciones" del ADR | backend-implementer |
+| 2026-11-12 | 0.2 | Decisión (diseño) | `turbo.json`: tarea `transit` (`dependsOn: ["^transit"]`) para que un cambio en `@repo/config` invalide `lint`/`typecheck`/`test` de quien lo consume; tarea de raíz `//#lint:root` (solo `eslint.config.js` de la raíz; se invalida al cambiar `@repo/config` porque la raíz depende de él y entra en el hash global, comprobado); solo `build` (`dist/**`) y `test` (`coverage/**`) declaran `outputs`; `envMode: strict`. TypeScript: `target`/`lib` ES2024 (Node 24). ESLint: `js.configs.recommended` + `typescript-eslint` `strictTypeChecked` con `projectService`, `.js` sin tipos, `--max-warnings=0`, cada paquete con su `eslint.config.js`. Prettier: Markdown excluido (documentación mantenida por personas) | backend-implementer |
+| 2026-11-12 | 0.2 | Completada | Criterios 1 a 6 en verde con salida real; `architect-reviewer` sin BLOQUEANTE ni ALTA (2 MEDIA: caché de `lint:root`, refutada con prueba; prueba de `createBaseConfig`, se cubre en 0.3) | backend-implementer |
+| 2026-11-12 | 0.2 | Aprobación | Aprobación anticipada del usuario, transmitida por el coordinador: "una vez termines, aprueba y pasa a la 0.3" (condicionada a todo en verde y sin hallazgos bloqueantes/altos, condición cumplida) | backend-implementer |
+| 2026-11-13 | 0.3 | Decisión | Usuario: Q-1 Vitest 5.1.0 + `@vitest/coverage-v8` 5.1.0; Q-2 `vite@8.3.8` fijado en la raíz y `esbuild` fuera de `allowBuilds` (confirmado: no se instala); Q-3 `unplugin-swc@2.0.0` + `@swc/core@1.16.22`; Q-4 todo en la raíz con versión exacta | backend-implementer |
+| 2026-11-13 | 0.3 | Hallazgo corregido | Las fábricas `vitest/*.ts` fallaban al consumirse por `@repo/config/vitest/*` (`ERR_MODULE_NOT_FOUND .../vitest/base.js`): el cargador de configuración de Vite deja el paquete enlazado a Node, que lo carga quitando tipos. Primer intento (imports con `.ts` + `allowImportingTsExtensions`) descartado: un consumidor temporal con `tsc` falló con TS5097. Corrección final: las fábricas se importan entre sí por el export del propio paquete (`@repo/config/vitest/base`, auto-referencia de paquete) y `erasableSyntaxOnly` en el tsconfig de `@repo/config`. Verificado: `tsc` de un consumidor temporal con perfil Nest en verde, y Vitest cargando `@repo/config/vitest/node` y `/nest` desde la raíz | backend-implementer |
+| 2026-11-13 | 0.3 | Revisión | `architect-reviewer`: 0 BLOQUEANTE, 0 ALTA, 4 MEDIA, 4 BAJA. Atendidas en 0.3: umbrales como piso (`resolveCoverageThresholds` rechaza bajar el mínimo del perfil), prueba del hook `transform` real del plugin SWC, aserción frágil retirada, convención de imports documentada, frase de "disco ajeno" corregida, correspondencia de perfiles con la tabla maestra. Quedan como decisión documentada: dependencias de `@repo/config` resueltas desde la raíz (sin `peerDependencies`). Pendiente para 0.8: prueba real de inyección de Nest con SWC | backend-implementer |
+| 2026-11-13 | 0.3 | Revisión | Re-revisión del delta (`architect-reviewer`): 0 BLOQUEANTE, 0 ALTA, 1 MEDIA (un `undefined` explícito borraba el piso; sin validar `NaN` ni >100), corregida con pruebas; 3 BAJA (fila `config` en `architecture-rules.md` → 0.4; nota de specs con `.js` añadida al README; `this` vacío en la prueba del hook, fragilidad futura aceptada) | backend-implementer |
+| 2026-11-13 | 0.3 | Completada | Criterios 1 a 5 en verde con salida real: `pnpm test` 29 pruebas y cobertura 100 % en todos los archivos; umbral incumplido → código 1; `pnpm test:int` código 0; consumo de las fábricas verificado desde otro paquete | backend-implementer |
+| 2026-11-13 | 0.3 | Aprobación | Aprobación anticipada del usuario, transmitida por el coordinador: "cuando todo quede en verde, pasa a la 0.4 con las decisiones D-5 A, D-6 A, D-7 realiza la propuesta" (condición cumplida: todo en verde y sin hallazgos bloqueantes/altos) | backend-implementer |
+| 2026-11-13 | 0.4 | Decisión | Usuario (vía coordinador): D-05 = A (`packages/platform`, `@repo/platform`); D-06 = A (`eslint-plugin-boundaries`); D-07 = propuesta del planner (filas para `observability`, `config`, `testing`, `platform`; confirmar capas hexagonales) | backend-implementer |
+| 2026-11-13 | 0.4 | Decisión | Usuario (vía coordinador): diseño previo aprobado; `eslint-plugin-boundaries@7.4.3` (instalada a las 17:36 UTC, tras cumplir la espera de 24 h, sin excepción); `eslint-import-resolver-typescript@4.4.5` con `unrs-resolver: false` en `allowBuilds`; cambios a `architecture-rules.md` y `CLAUDE.md` aprobados (incluidas filas de `api-client` y `ui`); `packages/platform/.gitkeep` | backend-implementer |
+| 2026-11-13 | 0.4 | Hallazgo corregido | Con descriptores `partialMatch: false`, `@boundaries/elements` 3.3.3 asigna el elemento de app/paquete en el primer nivel y no detecta padres: las capas hexagonales y FSD no se clasificaban. Corrección: patrones de derecha a izquierda (gana el elemento más interno) y "dentro de una app/paquete" por ruta de archivo (`file.path`). Guardas en las pruebas contra falsos verdes (cada `@repo/*` debe resolver como local) | backend-implementer |
+| 2026-11-13 | 0.4 | Revisión | `architect-reviewer`: 1 BLOQUEANTE, 2 ALTA, 8 MEDIA, 3 BAJA. **Corregido:** BLOQUEANTE (la excepción de Prisma para "cualquier `infrastructure/`" reabría `@repo/db`/Prisma a `provider-sim`, `web`, `integrations`, `domain`, etc.; ahora solo `infrastructure/` de `api`, `worker`, `platform`, más `db` y `testing`; 15 pruebas negativas nuevas, que fallan con el código anterior) y las celdas "Nunca importa" sin prueba (`api-client`, `ui`, `config`, pares de apps) y archivos anidados; además, guarda final: un `@repo/*` que no resuelve a su paquete local es error (antes pasaba como módulo externo permitido). **Pendiente de decisión del usuario:** ALTA-1 (qué externos pueden importar los specs y archivos de configuración de `domain`, `contracts` y `observability`), ALTA-2 (capa `domain/` de un módulo como lista cerrada; `interface/` solo tipos de `domain`) y varias MEDIA. 0.4 queda En Progreso | backend-implementer |
+| 2026-11-18 | 0.4 | Decisión | Usuario ("Aprobado, implementa las recomendaciones y continua", vía coordinador): ALTA-1 = (a) pruebas y configuración pueden importar cualquier externo/núcleo, sujetos a reglas internas; ALTA-2 = `domain/` lista cerrada (su propio `domain/` y `@repo/domain`), `interface/` puede importar valores de `domain/` ("tipos y errores"); M-1, M-2 y M-3 aplicadas; M-4 a ADR-0003 (revisión); M-5 y M-6 anotadas para Fase 2 / 0.20 | backend-implementer |
+| 2026-11-18 | 0.4 | Hallazgo corregido | Al aplicar M-1, la política 3 generaba `allow: { to: [] }` para paquetes sin dependencias internas; el plugin captura el error ("Invalid dependency selector") y la política no se evalúa, sin que las pruebas lo notaran. Corregido (se omiten listas vacías) y nueva prueba estructural que falla ante cualquier lista o selector vacío (verificada reintroduciendo el defecto) | backend-implementer |
+| 2026-11-18 | 0.4 | Revisión | Segunda revisión (`architect-reviewer`): 0 BLOQUEANTE, 1 ALTA, 7 MEDIA, 5 BAJA. **Corregido:** ALTA (la prueba M-3 fallaría en un clon limpio porque varias carpetas vacías de `apps/` y `packages/` no estaban versionadas: `.gitkeep` en `apps/{api,worker,provider-sim}` y `packages/{domain,contracts,db,observability,testing}`); globs con subrutas (`@prisma/**`, `@repo/**`); categoría `config` anclada a la raíz de cada app o paquete; capas hexagonales fuera de `apps/web`; pruebas de hermanos dentro de capa/slice, de "pruebas y configuración siguen sujetas" a Prisma y a reglas internas, y de imports de solo tipos. Limitación documentada: `import { type X }` cuenta como valor. **Pendiente de decisión:** si las pruebas dentro de `domain/` de api, worker o platform pueden usar `@repo/testing` (hoy no: la lista cerrada de `domain/` gana) | backend-implementer |
+| 2026-11-18 | 0.4 | Revisión | Tercera revisión (`architect-reviewer`): 0 BLOQUEANTE, 0 ALTA, 0 MEDIA, 4 BAJA; las cuatro atendidas (precisión de `config` en la raíz en `architecture-rules.md`, patrón de capas en ADR-0002, pruebas de `prisma`/`prisma/**`, nombres de grupos de prueba por regla). Verificación final: `pnpm lint`, `lint:boundaries`, `typecheck`, `test` (264), `test:int` y `lint:format` en verde; segunda corrida FULL TURBO. No se marca Aprobada: en la segunda revisión apareció una ALTA (corregida) y la instrucción era detenerse y reportar | backend-implementer |
+| 2026-11-18 | 0.4 | Decisión | Usuario: las pruebas dentro de `domain/` **no** pueden usar `@repo/testing` (se mantiene la lista cerrada y la prueba que lo fija). Registrado en ADR-0003 | backend-implementer |
+| 2026-11-18 | 0.4 | Aprobación | Aprobación directa del usuario: "Dejarla cerrada como se recomienda, dejamos aprobado la 0.4 y continua con la 0.5." ADR-0002 y ADR-0003 pasan a Aceptado. D-08 = B registrada en la sección 4.2 | backend-implementer |
+| 2026-11-18 | 0.5 | Avance | `.github/workflows/ci.yml` y `.github/actions/setup/action.yml`. Acciones fijadas por SHA de commit (obtenido con `git ls-remote`, etiquetas anotadas desreferenciadas): `actions/checkout` v7.0.1 `3d3c42e5…`, `actions/setup-node` v7.1.0 `949feb24…`, `pnpm/action-setup` v6.1.1 `73e46992…`, `gitleaks/gitleaks-action` v3.0.0 `e0c47f4f…`. Verificación local: YAML válido, todo `uses:` externo con SHA de 40 caracteres, los comandos de cada job en verde, `--affected` y la sonda de fronteras (`packages/domain/src/ci-probe.ts` → `zod`) que solo rompe `lint:boundaries`. Pendiente: corrida remota (push del usuario) y decisiones de la caché autoalojada | backend-implementer |
+| 2026-11-18 | 0.5 | Revisión | `architect-reviewer`: 0 BLOQUEANTE, 1 ALTA, 3 MEDIA, 3 BAJA. Corregido: ALTA (envenenamiento de la caché remota desde PR de ramas del mismo repo: la caché remota solo se activa en push a `main`, nunca en PR); `cancel-in-progress` solo en PR; `globalDependencies` (`.nvmrc`, `pnpm-workspace.yaml`) para que `--affected` no omita paquetes ante cambios de toolchain; pasos con `!cancelled()`; guarda contra saltos de línea en las variables. SHA verificados con `git ls-remote`. Pendiente: criterios 2–4 (corrida remota) | backend-implementer |
+| 2026-11-18 | 0.5 | Verificación remota | Primera corrida del PR de `phase-0` (informada por el usuario): todos los jobs en verde (Tests: 5 archivos, 264 pruebas) salvo el de gitleaks, con 2 hallazgos `generic-api-key` en el commit `c8242fa` | backend-implementer |
+| 2026-11-18 | 0.5 | Excepción de seguridad | Los 2 hallazgos son falsos positivos: el ejemplo didáctico `sk_test_abc123xyz` de la skill externa `nestjs-best-practices` (`.claude/skills/nestjs-best-practices/rules/config-no-secrets.md:34` y `AGENTS.md:2614`), fijada por commit y que no se edita. Se ignoran en `.gitleaksignore` por su huella exacta (`c8242fa9762c0943a71296b62d7e8f0819abaa47:<archivo>:generic-api-key:<línea>`), sin excepciones por ruta ni por regla, así que una fuga real futura en esos archivos se sigue detectando. Ojo: si el PR se fusiona con *squash*, el commit nuevo tendrá otra huella y habrá que añadirla | backend-implementer |
+| 2026-11-18 | 0.5 | Cambio | A pedido del usuario, los títulos de jobs y pasos del CI pasan al inglés: `Lint`, `Boundaries (lint:boundaries)`, `Typecheck`, `Tests`, `Build`, `Secrets (gitleaks)` (y los pasos visibles). Los comentarios del YAML siguen en español | backend-implementer |
+| 2026-11-13 | 0.3 | Decisión (diseño) | Cobertura v8 siempre activa en las unitarias (`pnpm test` hace cumplir el umbral sin depender de `--coverage`); perfil `utility` = 80 % de líneas (el plan no fija la métrica); integración sin cobertura y con `passWithNoTests`; SWC del perfil Nest con opciones `jsc` explícitas (`tsconfigFile: false`) en lugar de inferirlas del tsconfig | backend-implementer |
+| 2026-11-13 | — | Cambio de alcance del plan maestro | Plan maestro v2: el gancho pasa a ser el ahorro para compra de vivienda (Meta Casa); fase nueva 2B, cuatro módulos nuevos y el plan total pasa de 24 a 29 semanas. Sin impacto en el alcance, las estimaciones ni la compuerta de la Fase 0. Este plan pasa a la versión 1.1: fila 2B en la sección 2, candidatas de enmascarado en el checkpoint de 0.7, un riesgo en la sección 11 y nombres de archivo corregidos en el encabezado. El estado de las sub-fases no se tocó | sesión principal, por orden del usuario |
 
 ---
 

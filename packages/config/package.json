@@ -1,0 +1,23 @@
+{
+  "name": "@repo/config",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Configuración compartida del monorepo: TypeScript, ESLint, Prettier y Vitest.",
+  "type": "module",
+  "exports": {
+    "./tsconfig/base.json": "./tsconfig/base.json",
+    "./tsconfig/node.json": "./tsconfig/node.json",
+    "./tsconfig/nest.json": "./tsconfig/nest.json",
+    "./eslint/base": "./eslint/base.js",
+    "./eslint/boundaries": "./eslint/boundaries.js",
+    "./prettier": "./prettier/index.json",
+    "./vitest/base": "./vitest/base.ts",
+    "./vitest/node": "./vitest/node.ts",
+    "./vitest/nest": "./vitest/nest.ts"
+  },
+  "scripts": {
+    "lint": "eslint --max-warnings=0 .",
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "test": "vitest run"
+  }
+}

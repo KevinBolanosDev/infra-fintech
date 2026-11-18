@@ -2,23 +2,26 @@
 
 Orquesta cobros mensuales de arriendo por Bre-B, con ledger propio, recibos, score y certificados. **Nunca custodia dinero.** El MVP corre con proveedores simulados y pasa a producción cambiando solo variables de entorno.
 
-Plan completo (léelo antes de decidir arquitectura): `docs/Plan de desarrollo — Plataforma fintech de arriendos (MVP y escala).md`.
+Plan completo (léelo antes de decidir arquitectura): `docs/plan-de-desarrollo-plataforma-fintech-de-arriendos-(MVP-y-escala).md`.
+Plan de ejecución de la Fase 0 (sub-fases, decisiones, estado): `docs/fase-0-plan-de-implementacion.md`.
 Reglas de dependencia entre paquetes y capas: `docs/architecture-rules.md`.
-Cómo está configurado Claude Code aquí: `docs/Skills y MCPs para el desarrollo con Claude Code.md`.
+Cómo está configurado Claude Code aquí: `docs/skills-y-MCPs-para-el-desarrollo-con-claude-code.md`.
 
 ## Stack
 
-Turborepo + pnpm · NestJS (hexagonal) · Prisma 7 + PostgreSQL · Better Auth · Next.js (App Router, FSD, PWA) · BullMQ + Redis · Vitest en todo el monorepo · Docker Compose sobre Linux.
+Turborepo + pnpm · NestJS 12 (hexagonal, ESM) · Prisma 7 + PostgreSQL · Better Auth · Next.js (App Router, FSD, PWA) · BullMQ + Redis · Vitest en todo el monorepo · Docker Compose sobre Linux.
 
 - **pnpm y Node, nunca Bun.** La skill `nestjs-best-practices` está escrita para Bun (`bun add`, `Bun.password`): adapta esas reglas a pnpm/Node e ignora las instrucciones de Bun.
 - **Vitest, no Jest.** Ignora los patrones de Jest de cualquier skill externa.
+- **Node 24** (`.nvmrc`), TypeScript 5.9.x, todo el monorepo en ESM (`"type": "module"`, imports relativos con `.js`). Paquetes internos con scope `@repo/*`. Las skills de NestJS están escritas para Nest 11: adáptalas a Nest 12 y consulta Context7.
+- **Git:** el usuario hace todos los commits y pushes; el agente nunca commitea.
 - Prisma 7.x. No actualizar a Prisma 8 (hoy `rc`, exige Node 22) sin un ADR.
 
 ## Mapa del monorepo
 
 ```
 apps/      api · worker · provider-sim · web
-packages/  domain · contracts · api-client · db · integrations · observability · testing · ui · config
+packages/  domain · contracts · api-client · db · integrations · observability · testing · ui · config · platform
 infra/docker/   compose.yaml
 ```
 

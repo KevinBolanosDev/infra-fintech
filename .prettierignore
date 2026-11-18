@@ -1,0 +1,16 @@
+# Generado o de terceros: nunca se formatea
+pnpm-lock.yaml
+node_modules/
+dist/
+coverage/
+.turbo/
+.next/
+**/generated/
+**/migrations/
+
+# Configuración del agente (cambios con revisión humana; skills de terceros fijadas por commit)
+.claude/
+.mcp.json
+
+# Documentación en Markdown: la mantienen personas, no se reformatea automáticamente
+*.md

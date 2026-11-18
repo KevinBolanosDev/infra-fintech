@@ -1,0 +1,10 @@
+{
+  "compilerOptions": {
+    "module": "Node16",
+    "moduleResolution": "Node16",
+    "paths": {
+      "@repo/config/*": ["./packages/config/src/*.ts"],
+      "@repo/*": ["./packages/*/src/index.ts"]
+    }
+  }
+}

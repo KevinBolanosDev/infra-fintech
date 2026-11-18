@@ -1,0 +1,18 @@
+packages:
+  - apps/*
+  - packages/*
+
+# Falla la instalación si la versión de Node no cumple engines.node (no solo avisa).
+engineStrict: true
+
+# pnpm bloquea por defecto los scripts de instalación de las dependencias
+# (strictDepBuilds = true: un script no revisado hace fallar la instalación).
+# Solo se permiten los que el plan necesita; cada entrada nueva se revisa y se justifica.
+# Ver docs/adr/0001-toolchain-y-versiones.md.
+allowBuilds:
+  '@swc/core': true # binario nativo de SWC (pruebas y compilación, sub-fase 0.3)
+  prisma: true # CLI de Prisma 7 (sub-fase 0.10)
+  '@prisma/engines': true # motores de Prisma (sub-fase 0.10)
+  # Denegado (0.4): su postinstall solo comprueba el binario nativo, que pnpm ya instala como
+  # dependencia opcional (@unrs/resolver-binding-*). Lo usa eslint-import-resolver-typescript.
+  unrs-resolver: false

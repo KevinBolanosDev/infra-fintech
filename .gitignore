@@ -1,4 +1,4 @@
-.claude
+.claude/settings.local.json
 
 # Secretos y configuración local (nunca al repositorio)
 .env
@@ -15,3 +15,12 @@ node_modules/
 .turbo/
 dist/
 .next/
+coverage/
+*.tsbuildinfo
+
+# Cliente de Prisma generado (se genera en el grafo de Turbo; ruta definitiva según D-12, sub-fase 0.10)
+packages/db/src/generated/
+
+# Sistema operativo y editores
+.DS_Store
+Thumbs.db
