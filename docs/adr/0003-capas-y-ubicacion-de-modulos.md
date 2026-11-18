@@ -2,7 +2,7 @@
 
 | Campo | Valor |
 | --- | --- |
-| Estado | Propuesto (pendiente de revisión humana en el checkpoint de la sub-fase 0.4) |
+| Estado | Aceptado (aprobado por el usuario el 2026-11-18, checkpoint de la sub-fase 0.4) |
 | Fecha | 2026-11-13 |
 | Decisores | Usuario (dueño del proyecto) |
 | Sub-fase / fase | 0.4 (Fase 0) |
@@ -26,6 +26,7 @@
    - `api` y `worker` pueden importar `platform`.
 3. **Capas hexagonales de la sección 2: firmes** (ya no "inferidas"). Prisma y `@repo/db` solo en `infrastructure/` de `api`, `worker` y `platform`, en `packages/db` y en `packages/testing`.
    - `domain/` de un módulo es **lista cerrada** (ALTA-2): solo su propio `domain/` y `@repo/domain`; nada externo, ninguna otra capa, el `domain/` de ningún otro módulo y ningún otro paquete interno.
+   - Las pruebas que viven dentro de `domain/` **no** pueden usar `@repo/testing` (decisión del usuario, 2026-11-18): son pruebas puras (`vitest`, `fast-check`) y abrirlo crearía el ciclo `testing` → `domain`. Hay una prueba que lo fija.
    - `interface/` puede importar valores de `domain/` (por ejemplo, errores para traducirlos a HTTP): la tabla dice "tipos y errores de `domain`".
    - **Pruebas y configuración** (ALTA-1): los `*.spec.ts`, `*.int-spec.ts`, `*.e2e-spec.ts`, `test/**` y `*.config.{js,ts}` pueden importar cualquier módulo externo o del núcleo de Node aunque su paquete o capa los restrinja (`vitest`, `fast-check`, `eslint/config`…). Siguen sujetos a las reglas entre paquetes internos y a la de Prisma.
 4. **Responsabilidad de la revisión (M-4):** "un módulo nunca lee las tablas de otro" no se expresa con reglas de lint (dos módulos de la misma app son el mismo elemento salvo por sus capas). Lo controlan la revisión humana y `architect-reviewer`.

@@ -1,0 +1,21 @@
+# Prepara el entorno igual que en local: Node desde .nvmrc, pnpm desde `packageManager`,
+# caché del almacén de pnpm e instalación con el lockfile congelado.
+# Acciones de terceros fijadas por SHA de commit (comentario = etiqueta de la versión).
+name: Preparar entorno
+description: Node (.nvmrc), pnpm (packageManager), caché del almacén y pnpm install --frozen-lockfile.
+
+runs:
+  using: composite
+  steps:
+    - name: Instalar pnpm (versión de packageManager)
+      uses: pnpm/action-setup@73e46992e05b19abd31f2f3c20e0e7370d762115 # v6.1.1
+
+    - name: Instalar Node (versión de .nvmrc) con caché del almacén de pnpm
+      uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+      with:
+        node-version-file: .nvmrc
+        cache: pnpm
+
+    - name: Instalar dependencias (lockfile congelado)
+      shell: bash
+      run: pnpm install --frozen-lockfile

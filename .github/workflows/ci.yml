@@ -1,0 +1,125 @@
+# CI base (sub-fase 0.5): los mismos controles que en local, más escaneo de secretos.
+# - En PR: las tareas por paquete solo corren en lo afectado (`--affected`); las de la raíz
+#   (fronteras, lint de la raíz, formato) siempre corren completas: son globales y rápidas.
+# - En main: todo completo.
+# Acciones de terceros fijadas por SHA de commit (comentario = etiqueta de la versión).
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  # Solo se cancelan corridas de PR: cada push a main conserva su CI completo.
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  quality:
+    name: ${{ matrix.name }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: Lint
+            tasks: lint
+            global: lint:root
+            format: true
+          - name: Fronteras (lint:boundaries)
+            tasks: ''
+            global: lint:boundaries
+            format: false
+          - name: Tipos (typecheck)
+            tasks: typecheck
+            global: ''
+            format: false
+          - name: Pruebas (test)
+            tasks: test
+            global: ''
+            format: false
+          - name: Build
+            tasks: build
+            global: ''
+            format: false
+    steps:
+      - name: Checkout (historial completo para --affected)
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          filter: blob:none
+          persist-credentials: false
+
+      - name: Preparar entorno
+        uses: ./.github/actions/setup
+
+      # D-08 = B (caché remota autoalojada). Solo en push a main y solo si el repositorio define
+      # TURBO_API y TURBO_TEAM (variables) y TURBO_TOKEN (secreto). En los PR nunca se expone el
+      # token: código no revisado no puede escribir en la caché que luego consume main.
+      - name: Caché remota de Turbo (solo main, si está configurada)
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        env:
+          TURBO_API_VAR: ${{ vars.TURBO_API }}
+          TURBO_TEAM_VAR: ${{ vars.TURBO_TEAM }}
+          TURBO_TOKEN_SECRET: ${{ secrets.TURBO_TOKEN }}
+        run: |
+          for value in "$TURBO_API_VAR" "$TURBO_TEAM_VAR" "$TURBO_TOKEN_SECRET"; do
+            case "$value" in *$'\n'* | *$'\r'*)
+              echo "::error::Las variables de la caché remota no pueden tener saltos de línea."
+              exit 1 ;;
+            esac
+          done
+          if [ -n "$TURBO_API_VAR" ] && [ -n "$TURBO_TEAM_VAR" ] && [ -n "$TURBO_TOKEN_SECRET" ]; then
+            {
+              echo "TURBO_API=$TURBO_API_VAR"
+              echo "TURBO_TEAM=$TURBO_TEAM_VAR"
+              echo "TURBO_TOKEN=$TURBO_TOKEN_SECRET"
+            } >> "$GITHUB_ENV"
+            echo "Caché remota de Turbo activada."
+          else
+            echo "Caché remota de Turbo no configurada: solo caché local."
+          fi
+
+      # `!cancelled()`: si un paso falla, los siguientes del job también corren y reportan.
+      - name: Formato (Prettier)
+        if: ${{ !cancelled() && matrix.format }}
+        run: pnpm lint:format
+
+      - name: Tareas globales (${{ matrix.global }})
+        if: ${{ !cancelled() && matrix.global != '' }}
+        run: pnpm turbo run ${{ matrix.global }}
+
+      - name: Tareas por paquete en PR (solo afectados)
+        if: ${{ !cancelled() && matrix.tasks != '' && github.event_name == 'pull_request' }}
+        run: pnpm turbo run ${{ matrix.tasks }} --affected
+
+      - name: Tareas por paquete en main (completas)
+        if: ${{ !cancelled() && matrix.tasks != '' && github.event_name != 'pull_request' }}
+        run: pnpm turbo run ${{ matrix.tasks }}
+
+  secrets:
+    name: Secretos (gitleaks)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      pull-requests: read
+    steps:
+      - name: Checkout (historial completo)
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      # Cuenta personal: no requiere GITLEAKS_LICENSE. Sin comentarios en el PR (necesitarían
+      # permiso de escritura); el resultado queda en el resumen del job.
+      - name: Escanear secretos en el historial
+        uses: gitleaks/gitleaks-action@e0c47f4f8be36e29cdc102c57e68cb5cbf0e8d1e # v3.0.0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITLEAKS_ENABLE_COMMENTS: false

@@ -21,6 +21,16 @@ nvm use
 pnpm install --frozen-lockfile
 ```
 
+## Integración continua
+
+`.github/workflows/ci.yml` repite en GitHub Actions los controles locales, en jobs separados: `Lint` (incluye `lint:root` y formato), `Fronteras (lint:boundaries)`, `Tipos (typecheck)`, `Pruebas (test)`, `Build` y `Secretos (gitleaks)`. En un PR, las tareas por paquete corren solo en lo afectado (`--affected`); las de la raíz y `main` corren completas. Node y pnpm salen de `.nvmrc` y `packageManager` (`.github/actions/setup`). La caché remota de Turbo (autoalojada, D-08) se activa solo en los push a `main` y si el repositorio define `TURBO_API`, `TURBO_TEAM` y el secreto `TURBO_TOKEN`; en los PR nunca se expone el token.
+
+Equivalente local:
+
+```bash
+pnpm lint:format && pnpm turbo run lint lint:root lint:boundaries typecheck test build
+```
+
 ## Estructura
 
 ```

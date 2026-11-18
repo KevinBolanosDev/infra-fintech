@@ -178,7 +178,7 @@ const FORBIDDEN: Record<string, readonly Edge[]> = {
     // Limitación conocida del plugin: `import { type X }` cuenta como import de valor. En
     // packages/db hay que usar `import type { X }` (falso bloqueo, nunca falso permiso).
     [pkg('db'), '@repo/domain', 'inline-type'],
-    // Comportamiento actual (pendiente de confirmar): la lista cerrada de domain/ gana sobre la regla de testing.
+    // Decisión del usuario (ADR-0003): las pruebas dentro de domain/ no usan @repo/testing.
     ['apps/api/src/modules/charges/domain/charge.spec.ts', '@repo/testing'],
   ],
   'sección 2: capas hexagonales': [

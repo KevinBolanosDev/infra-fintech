@@ -15,5 +15,5 @@ Cada decisión de arquitectura aceptada deja un ADR corto en esta carpeta (lo pi
 | --- | --- | --- | --- |
 | [0000](0000-plantilla.md) | Plantilla | — | — |
 | [0001](0001-toolchain-y-versiones.md) | Toolchain y versiones | Aceptado | 2026-11-12 |
-| [0002](0002-herramienta-de-fronteras.md) | Herramienta que hace cumplir las reglas de dependencia | Propuesto | 2026-11-13 |
-| [0003](0003-capas-y-ubicacion-de-modulos.md) | Capas confirmadas y ubicación de los módulos compartidos | Propuesto | 2026-11-13 |
+| [0002](0002-herramienta-de-fronteras.md) | Herramienta que hace cumplir las reglas de dependencia | Aceptado | 2026-11-13 |
+| [0003](0003-capas-y-ubicacion-de-modulos.md) | Capas confirmadas y ubicación de los módulos compartidos | Aceptado | 2026-11-13 |

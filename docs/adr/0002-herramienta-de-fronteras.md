@@ -2,7 +2,7 @@
 
 | Campo | Valor |
 | --- | --- |
-| Estado | Propuesto (pendiente de revisión humana en el checkpoint de la sub-fase 0.4) |
+| Estado | Aceptado (aprobado por el usuario el 2026-11-18, checkpoint de la sub-fase 0.4) |
 | Fecha | 2026-11-13 |
 | Decisores | Usuario (dueño del proyecto) |
 | Sub-fase / fase | 0.4 (Fase 0) |
