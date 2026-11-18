@@ -9,6 +9,7 @@
     "./tsconfig/node.json": "./tsconfig/node.json",
     "./tsconfig/nest.json": "./tsconfig/nest.json",
     "./eslint/base": "./eslint/base.js",
+    "./eslint/boundaries": "./eslint/boundaries.js",
     "./prettier": "./prettier/index.json",
     "./vitest/base": "./vitest/base.ts",
     "./vitest/node": "./vitest/node.ts",

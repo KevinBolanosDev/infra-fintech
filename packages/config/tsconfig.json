@@ -9,5 +9,6 @@
     // propio paquete (@repo/config/vitest/base), nunca por ruta relativa.
     "erasableSyntaxOnly": true
   },
-  "include": ["**/*.ts", "eslint/**/*.js", "eslint.config.js"]
+  "include": ["**/*.ts", "eslint/**/*.js", "eslint.config.js"],
+  "exclude": ["eslint/__fixtures__"]
 }

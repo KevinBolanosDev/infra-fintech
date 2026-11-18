@@ -19,10 +19,6 @@
       "dependsOn": ["transit", "^build"],
       "outputs": []
     },
-    "lint:boundaries": {
-      "dependsOn": ["transit"],
-      "outputs": []
-    },
     "test": {
       "dependsOn": ["transit", "^build"],
       "outputs": ["coverage/**"]
@@ -34,6 +30,9 @@
     },
     "//#lint:root": {
       "inputs": ["$TURBO_DEFAULT$", "!apps/**", "!packages/**"],
+      "outputs": []
+    },
+    "//#lint:boundaries": {
       "outputs": []
     },
     "dev": {

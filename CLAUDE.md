@@ -21,7 +21,7 @@ Turborepo + pnpm · NestJS 12 (hexagonal, ESM) · Prisma 7 + PostgreSQL · Bette
 
 ```
 apps/      api · worker · provider-sim · web
-packages/  domain · contracts · api-client · db · integrations · observability · testing · ui · config
+packages/  domain · contracts · api-client · db · integrations · observability · testing · ui · config · platform
 infra/docker/   compose.yaml
 ```
 

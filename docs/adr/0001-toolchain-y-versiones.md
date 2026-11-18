@@ -52,6 +52,8 @@ Solo se instala cada pieza en la sub-fase que la necesita (criterio "ninguna dep
 | unplugin-swc | `2.0.0` | 0.3 | Transforma TypeScript con SWC en Vitest (desactiva `oxc` de Vite) |
 | @swc/core | `1.16.22` | 0.3 | En `allowBuilds` (script `postinstall`) |
 | ~~esbuild~~ | — | — | Retirado de `allowBuilds` en 0.3: Vite 8 no lo instala |
+| eslint-plugin-boundaries | `7.4.3` | 0.4 | Reglas de dependencia (ADR-0002). Instalada cuando cumplió la espera de 24 h, sin excepción |
+| eslint-import-resolver-typescript | `4.4.5` | 0.4 | Resolutor de imports para las fronteras (ADR-0002). `unrs-resolver: false` en `allowBuilds` |
 | @nestjs/core, @nestjs/common | `12.5.0` | 0.8 | Solo ESM; engines `>= 20` |
 | prisma, @prisma/client, @prisma/adapter-pg | `7.10.1` | 0.10 | `prisma` y `@prisma/engines` en `allowBuilds` |
 
