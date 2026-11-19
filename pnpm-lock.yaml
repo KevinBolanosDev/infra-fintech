@@ -229,6 +229,9 @@ importers:
       '@nestjs/platform-express':
         specifier: 12.5.1
         version: 12.5.1(@nestjs/common@12.5.1(reflect-metadata@0.2.2)(rxjs@7.8.2)(supports-color@7.2.0))(@nestjs/core@12.5.1)(rxjs@7.8.2)(supports-color@7.2.0)
+      '@repo/contracts':
+        specifier: workspace:*
+        version: link:../../packages/contracts
       '@repo/observability':
         specifier: workspace:*
         version: link:../../packages/observability
@@ -262,6 +265,16 @@ importers:
         version: 7.3.2(supports-color@7.2.0)
 
   packages/config: {}
+
+  packages/contracts:
+    dependencies:
+      zod:
+        specifier: 4.6.7
+        version: 4.6.7
+    devDependencies:
+      '@repo/config':
+        specifier: workspace:*
+        version: link:../config
 
   packages/observability:
     dependencies:

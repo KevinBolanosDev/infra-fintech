@@ -1,4 +1,4 @@
-import { type DynamicModule, Module } from '@nestjs/common';
+import { type DynamicModule, Module, type Type } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 
 import type { AppConfig } from './config/env.schema.js';
@@ -13,8 +13,9 @@ export class AppModule {
   /**
    * La configuración llega ya validada (`parseEnv`): `ConfigModule` no lee archivos `.env` ni vuelve
    * a validar `process.env`, así que la app es determinista en pruebas.
+   * `extraModules` es solo para pruebas (ver `CreateAppOptions`).
    */
-  static register(config: AppConfig): DynamicModule {
+  static register(config: AppConfig, extraModules: readonly Type[] = []): DynamicModule {
     return {
       module: AppModule,
       imports: [
@@ -24,6 +25,7 @@ export class AppModule {
           load: [() => ({ [APP_CONFIG_KEY]: config })],
         }),
         HealthModule,
+        ...extraModules,
       ],
       providers: [ShutdownLogger],
     };

@@ -168,16 +168,26 @@ describe('createLogger', () => {
   it('agrega request_id y correlation_id en cada línea dentro de un contexto, y no fuera', () => {
     const { logger, context, entries } = testLogger();
     logger.info('fuera');
-    context.run({ requestId: 'req-1', correlationId: 'corr-1', ip: '10.0.0.1' }, () => {
-      logger.info('dentro 1');
-      logger.child({ module: 'charges' }).info('dentro 2');
-    });
+    context.run(
+      {
+        requestId: 'req-1',
+        correlationId: 'corr-1',
+        ip: '10.0.0.1',
+        userAgent: 'agente-sintetico/1.0',
+      },
+      () => {
+        logger.info('dentro 1');
+        logger.child({ module: 'charges' }).info('dentro 2');
+      },
+    );
 
     const [outside, inside1, inside2] = entries();
     expect(outside).not.toHaveProperty('request_id');
     for (const entry of [inside1, inside2]) {
       expect(entry).toMatchObject({ request_id: 'req-1', correlation_id: 'corr-1' });
       expect(entry).not.toHaveProperty('ip');
+      expect(entry).not.toHaveProperty('userAgent');
+      expect(JSON.stringify(entry)).not.toContain('agente-sintetico');
     }
   });
 

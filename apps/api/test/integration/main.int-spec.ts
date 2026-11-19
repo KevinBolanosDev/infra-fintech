@@ -1,4 +1,5 @@
 import { type ChildProcess, spawn } from 'node:child_process';
+import { readdirSync } from 'node:fs';
 import { Agent, get } from 'node:http';
 import { createServer } from 'node:net';
 import { fileURLToPath } from 'node:url';
@@ -68,6 +69,16 @@ function withTimeout<T>(promise: Promise<T>, ms: number, what: string): Promise<
   ]);
 }
 
+describe('dist/', () => {
+  it('no contiene código de pruebas (ni el controlador de errores de prueba ni *.spec)', () => {
+    const files = readdirSync(fileURLToPath(new URL('../../dist/', import.meta.url)), {
+      recursive: true,
+    }).map(String);
+    expect(files.length).toBeGreaterThan(0);
+    expect(files.filter((file) => /spec|test-errors|support/.test(file))).toEqual([]);
+  });
+});
+
 describe('dist/main.js', () => {
   it('con una variable inválida falla con un mensaje claro y código distinto de 0', async () => {
     const { exited } = start({ APP_ENV: 'valor-sintetico-invalido', HTTP_PORT: '1' });
@@ -113,6 +124,22 @@ describe('dist/main.js', () => {
     });
     expect(status).toBe(200);
     expect(socketClosed).toBe(false);
+
+    // El controlador solo de pruebas no existe en el artefacto: 404 como problem+json.
+    const probe = await new Promise<{ status?: number; type?: string; body: string }>(
+      (resolve, reject) => {
+        get({ host: '127.0.0.1', port, path: '/v1/pruebas/error-inesperado' }, (response) => {
+          let body = '';
+          response.on('data', (chunk: Buffer) => (body += chunk.toString()));
+          response.on('end', () => {
+            resolve({ status: response.statusCode, type: response.headers['content-type'], body });
+          });
+        }).on('error', reject);
+      },
+    );
+    expect(probe.status).toBe(404);
+    expect(probe.type).toContain('application/problem+json');
+    expect(JSON.parse(probe.body)).toMatchObject({ code: 'NOT_FOUND' });
 
     child.kill('SIGTERM');
     const result = await withTimeout(exited, 10_000, 'cierre tras SIGTERM');

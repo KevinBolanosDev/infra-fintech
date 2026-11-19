@@ -10,6 +10,8 @@ export interface ExecutionContextStore {
   readonly actorId?: string;
   /** IP de origen, si aplica. Es un dato personal: el logger no la escribe. */
   readonly ip?: string;
+  /** Agente de usuario (`User-Agent`), si aplica. El logger no lo escribe. */
+  readonly userAgent?: string;
 }
 
 /** Contexto de ejecución basado en `AsyncLocalStorage`; no depende de NestJS. */
