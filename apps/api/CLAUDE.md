@@ -1,6 +1,6 @@
 # apps/api — guía para el agente
 
-> Propuesta de la sub-fase 0.8, **pendiente de revisión humana**. Complementa el `CLAUDE.md` de la raíz; ante cualquier conflicto, manda el de la raíz.
+> Aprobado por el usuario en el checkpoint de la sub-fase 0.8 (2026-11-18). Complementa el `CLAUDE.md` de la raíz; ante cualquier conflicto, manda el de la raíz. Cambios a este archivo requieren revisión humana.
 
 API HTTP de la plataforma: NestJS 12 en ESM sobre Express (D-10), compilada con `tsc` (ADR-0007).
 
@@ -11,7 +11,7 @@ API HTTP de la plataforma: NestJS 12 en ESM sobre Express (D-10), compilada con 
 - `src/create-app.ts`: `createApp(env)` crea y configura la app **sin escuchar** (las pruebas la usan con Supertest). Orden fijo: `helmet` primero, sin `x-powered-by`, `trust proxy`, límite de cuerpo, CORS con lista blanca, versionado `/v1`, `enableShutdownHooks`.
 - `src/config/env.schema.ts`: esquema Zod del entorno. Toda variable nueva va aquí **y** en `.env.example` (valores sintéticos) **y** en `passThroughEnv` de la tarea `dev` de `turbo.json`.
 - `src/health/`: `GET /health` (vivacidad, sin tocar dependencias), neutral a la versión.
-- Módulos de negocio (Fase 1 en adelante): `src/modules/<nombre>/{domain,application,infrastructure,interface}` (ADR-0003). Los técnicos (`config`, `health`) son planos.
+- Módulos de negocio (Fase 1 en adelante): `src/modules/<nombre>/{domain,application,infrastructure,interface}`, una carpeta por módulo con sus cuatro capas (ADR-0003, `docs/architecture-rules.md` sección 2). `lint:boundaries` reconoce las capas por el nombre de la carpeta bajo `src/`, así que no uses esos cuatro nombres para otra cosa. Los módulos técnicos (`config`, `health`, `logging`, `lifecycle`) son planos.
 
 ## Reglas propias de la api
 

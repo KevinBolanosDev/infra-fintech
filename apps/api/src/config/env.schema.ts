@@ -1,7 +1,10 @@
 import { APP_ENVS, LOG_LEVELS } from '@repo/observability';
 import { z } from 'zod';
 
+/** `http(s)://host[:puerto]`: sin `*`, sin ruta, sin barra final, sin espacios. */
 const ORIGIN_PATTERN = /^https?:\/\/[^/\s*]+$/;
+/** Hosts de la propia máquina: no son orígenes válidos fuera de `local` y `test`. */
+const LOOPBACK_HOSTS = new Set(['localhost', '127.0.0.1', '[::1]']);
 const BODY_LIMIT_PATTERN = /^\d+(b|kb|mb)$/;
 
 const allowedOrigins = z
@@ -19,7 +22,7 @@ const allowedOrigins = z
         .string()
         .regex(
           ORIGIN_PATTERN,
-          'cada origen debe ser http(s)://host[:puerto], sin ruta ni comodines',
+          'cada origen debe ser http(s)://host[:puerto], sin ruta, barra final ni comodines',
         ),
     ),
   );
@@ -60,9 +63,31 @@ export const envSchema = z.object({
     .default('100kb'),
 });
 
-/** Esquema completo: el puerto 0 (aleatorio) solo tiene sentido en `local` y `test`. */
+function isLoopbackOrigin(origin: string): boolean {
+  const { hostname } = new URL(origin);
+  return LOOPBACK_HOSTS.has(hostname) || hostname.endsWith('.localhost');
+}
+
+/**
+ * Reglas que dependen del ambiente. Fuera de `local` y `test`: el puerto 0 (aleatorio) no se permite y
+ * cada origen de CORS debe ser `https://` y no apuntar a la propia máquina.
+ */
 const appEnvSchema = envSchema.superRefine((config, context) => {
-  if (config.HTTP_PORT === 0 && config.APP_ENV !== 'local' && config.APP_ENV !== 'test') {
+  const isDevelopment = config.APP_ENV === 'local' || config.APP_ENV === 'test';
+  if (
+    !isDevelopment &&
+    config.ALLOWED_ORIGINS.some(
+      (origin) => !origin.startsWith('https://') || isLoopbackOrigin(origin),
+    )
+  ) {
+    context.addIssue({
+      code: 'custom',
+      path: ['ALLOWED_ORIGINS'],
+      message:
+        'fuera de local y test cada origen debe ser https:// y no localhost, 127.0.0.1 ni ::1',
+    });
+  }
+  if (config.HTTP_PORT === 0 && !isDevelopment) {
     context.addIssue({
       code: 'custom',
       path: ['HTTP_PORT'],

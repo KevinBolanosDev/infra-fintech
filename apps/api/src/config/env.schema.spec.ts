@@ -19,7 +19,7 @@ describe('parseEnv', () => {
       parseEnv({
         APP_ENV: 'staging',
         HTTP_PORT: '8080',
-        ALLOWED_ORIGINS: 'https://app.example.test, http://localhost:3001',
+        ALLOWED_ORIGINS: 'https://app.example.test, https://admin.example.test:8443',
         LOG_LEVEL: 'debug',
         TRUST_PROXY: '2',
         HTTP_BODY_LIMIT: '1mb',
@@ -27,7 +27,7 @@ describe('parseEnv', () => {
     ).toEqual({
       APP_ENV: 'staging',
       HTTP_PORT: 8080,
-      ALLOWED_ORIGINS: ['https://app.example.test', 'http://localhost:3001'],
+      ALLOWED_ORIGINS: ['https://app.example.test', 'https://admin.example.test:8443'],
       LOG_LEVEL: 'debug',
       TRUST_PROXY: 2,
       HTTP_BODY_LIMIT: '1mb',
@@ -50,6 +50,53 @@ describe('parseEnv', () => {
   ])('rechaza %o nombrando la variable', (env, expected) => {
     expect(() => parseEnv(env)).toThrow(EnvValidationError);
     expect(() => parseEnv(env)).toThrow(expected);
+  });
+
+  it.each([
+    ['staging', 'http://app.example.test'],
+    ['production', 'https://localhost'],
+    ['production', 'https://127.0.0.1:8443'],
+    ['sandbox', 'https://[::1]'],
+    ['production', 'https://app.localhost'],
+    ['production', 'https://app.example.test,http://otro.example.test'],
+  ])('fuera de local y test (%s) rechaza el origen %s', (appEnv, origins) => {
+    expect(() => parseEnv({ APP_ENV: appEnv, ALLOWED_ORIGINS: origins })).toThrow(
+      'ALLOWED_ORIGINS (fuera de local y test cada origen debe ser https://',
+    );
+  });
+
+  it.each([
+    'https://app.example.test/',
+    'https://app.example.test/ruta',
+    '*',
+    'https://*.example.test',
+    'app.example.test',
+  ])('en cualquier ambiente rechaza el origen mal formado %s', (origin) => {
+    for (const appEnv of ['local', 'production']) {
+      expect(() => parseEnv({ APP_ENV: appEnv, ALLOWED_ORIGINS: origin })).toThrow(
+        'ALLOWED_ORIGINS',
+      );
+    }
+  });
+
+  it('fuera de local y test acepta https:// con host público y puerto', () => {
+    expect(
+      parseEnv({
+        APP_ENV: 'production',
+        ALLOWED_ORIGINS: 'https://app.example.test, https://admin.example.test:8443',
+      }).ALLOWED_ORIGINS,
+    ).toEqual(['https://app.example.test', 'https://admin.example.test:8443']);
+  });
+
+  it('en local y test acepta http:// y la propia máquina', () => {
+    for (const appEnv of ['local', 'test']) {
+      expect(
+        parseEnv({
+          APP_ENV: appEnv,
+          ALLOWED_ORIGINS: 'http://localhost:3001,http://127.0.0.1:3001,http://[::1]:3001',
+        }).ALLOWED_ORIGINS,
+      ).toHaveLength(3);
+    }
   });
 
   it('permite el puerto 0 en local y test', () => {

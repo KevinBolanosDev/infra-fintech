@@ -14,7 +14,7 @@ pnpm turbo run lint typecheck test test:int --filter=@repo/api
 | --- | --- | --- |
 | `APP_ENV` | (obligatoria) | `local`, `test`, `staging`, `sandbox` o `production` |
 | `HTTP_PORT` | `3000` | Puerto HTTP (`0` = uno libre) |
-| `ALLOWED_ORIGINS` | vacío | Orígenes CORS permitidos, separados por comas; nunca `*` |
+| `ALLOWED_ORIGINS` | vacío | Orígenes CORS permitidos, separados por comas (`http(s)://host[:puerto]`): nunca `*`, ni ruta, ni barra final. Fuera de `local` y `test`, solo `https://` y nunca `localhost`, `127.0.0.1` ni `::1` |
 | `LOG_LEVEL` | `info` | `fatal` … `trace` o `silent` |
 | `TRUST_PROXY` | `false` | `false` o número de proxies de confianza (1 a 10) |
 | `HTTP_BODY_LIMIT` | `100kb` | Tamaño máximo del cuerpo (`b`, `kb`, `mb`) |

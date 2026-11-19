@@ -60,7 +60,7 @@ Orden de capas de arriba hacia abajo; **cada capa solo importa de las de abajo**
 
 ## 4. Señales de alerta en revisión
 
-- `number` o `float` para dinero; `Date.now()` / `new Date()` fuera de `ClockService`.
+- `number` o `float` para dinero; `Date.now` / `new Date()` / `Date()` fuera de `ClockService` (única excepción: la hora de los logs en `packages/observability`, ADR-0006).
 - `UPDATE` o `DELETE` sobre `ledger_*`, `audit_log` o `provider_events`.
 - Lógica de negocio en un controlador, o acceso a Prisma desde `application/` o `interface/`.
 - Un endpoint que crea o mueve algo sin `Idempotency-Key`.
