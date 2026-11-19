@@ -36,7 +36,7 @@ Estado actual: solo existe la estructura de carpetas (fase 0). Los comandos de a
 3. **Idempotencia** en toda operación que cree o mueva algo (`Idempotency-Key`).
 4. **Nunca confiar en un webhook:** dispara una consulta a la API del proveedor; solo ese resultado cambia estados.
 5. **Proveedores detrás de una interfaz** con dos implementaciones (simulada y real), elegidas por `*_PROVIDER`. Ningún acceso a proveedores reales desde el código de desarrollo.
-6. **Reloj inyectable:** nada lee la hora del sistema; todo pasa por `ClockService`.
+6. **Reloj inyectable:** nada lee la hora del sistema; todo pasa por `ClockService`. Única excepción: la hora de cada línea de log en `packages/observability`, que es operativa (cuándo ocurrió de verdad) y no de negocio (ADR-0006). ESLint prohíbe `Date.now` (llamada o referencia), `new Date()` sin argumentos y `Date()` fuera de ese paquete, también en pruebas y configuración.
 7. **Auditoría completa** (`audit_log`) y eventos por `outbox` en la misma transacción.
 8. **Ningún archivo con lógica sin sus pruebas** (tabla en el plan, sección "Política de pruebas"). Pruebas junto al archivo (`*.spec.ts`), integración en `test/integration/*.int-spec.ts`.
 9. **Respeta las reglas de dependencia** de `docs/architecture-rules.md`. Un import prohibido es un defecto, no un atajo.

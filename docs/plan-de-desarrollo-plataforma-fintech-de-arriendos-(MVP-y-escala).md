@@ -296,12 +296,12 @@ Un archivo `infra/docker/compose.yaml` levanta todo con un comando. Los servicio
 | --- | --- | --- |
 | `postgres` | PostgreSQL oficial | Base de la plataforma y base separada del simulador |
 | `redis` | Redis oficial | Colas y reloj simulado |
-| `minio` | MinIO | Almacenamiento compatible con S3 para PDFs y comprobantes |
+| `s3` (Fase 3) | Emulador S3 por decidir (candidato: RustFS) | Almacenamiento compatible con S3 para PDFs y comprobantes. MinIO ya no publica imágenes de su edición comunitaria (solo código fuente); se decide en la Fase 3 (ADR-0004) |
 | `mailpit` | Mailpit | Bandeja de correo falsa con interfaz web |
 | `api`, `worker`, `provider-sim` | Imágenes propias | Con recarga automática mediante `docker compose watch` |
 | `web` | Imagen propia | Se agrega en la fase 4 |
 
-Perfiles de Compose para no levantar todo siempre: `infra` (solo Postgres, Redis, MinIO y Mailpit), `backend` (infra más `api`, `worker` y `provider-sim`) y `full`.
+Perfiles de Compose para no levantar todo siempre: `infra` (solo Postgres, Redis y Mailpit; el emulador S3 se suma en la Fase 3), `backend` (infra más `api`, `worker` y `provider-sim`) y `full`.
 
 Opcional: un Dev Container (VS Code o JetBrains) con Node, pnpm y las herramientas fijadas, para que ambas personas trabajen con el mismo entorno exacto.
 
@@ -515,7 +515,7 @@ Las comparaciones de Didit vienen de su propio sitio; hay que validarlas con una
 | Autenticación | Better Auth (TypeScript, adaptador Prisma, 2FA, Google) dentro de NestJS | Igual | Implementación propia con argon2 + JWT (`jose`) |
 | Hosting API y worker | Railway o Render | AWS ECS Fargate | Fly.io |
 | Hosting web | Vercel | Vercel | AWS Amplify |
-| Archivos (PDF, comprobantes) | MinIO local | Cloudflare R2 o AWS S3 con URLs firmadas | — |
+| Archivos (PDF, comprobantes) | Emulador S3 local (se decide en la Fase 3; MinIO ya no publica imágenes) | Cloudflare R2 o AWS S3 con URLs firmadas | — |
 | Correo | Mailpit local (bandeja falsa) | Resend o AWS SES | Postmark |
 | WhatsApp | Simulador | Meta WhatsApp Cloud API directa o un BSP | Twilio |
 | Push | Web Push con VAPID | Igual | OneSignal |

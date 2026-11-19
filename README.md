@@ -19,6 +19,7 @@ El repositorio debe vivir en el sistema de archivos de Linux (por ejemplo `~/pro
 ```bash
 nvm use
 pnpm install --frozen-lockfile
+pnpm infra:up      # PostgreSQL, Redis y Mailpit (ver infra/docker/README.md)
 ```
 
 ## Integración continua

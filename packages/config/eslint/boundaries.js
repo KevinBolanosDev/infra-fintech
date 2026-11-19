@@ -311,7 +311,14 @@ export function createBoundariesConfig(options = {}) {
           { pattern: '{apps,packages}/*/*.config.{js,mjs,cjs,ts,mts,cts}', category: 'config' },
         ],
         'import/resolver': {
-          [resolverPath]: { project, alwaysTryTypes: true },
+          [resolverPath]: {
+            project,
+            alwaysTryTypes: true,
+            noWarnOnMultipleProjects: true,
+            // Sin `types`: en `exports` va antes que `source` (para TypeScript) y apunta a `dist/`. Así
+            // el resolutor elige `source` y las fronteras se resuelven sin compilar `dist/` (ADR-0005).
+            conditionNames: ['source', 'import', 'node', 'default'],
+          },
         },
       },
       rules: {

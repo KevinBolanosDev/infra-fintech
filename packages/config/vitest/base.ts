@@ -1,4 +1,12 @@
+import { defaultClientConditions, defaultServerConditions } from 'vite';
 import { defineConfig, type Plugin, type ViteUserConfig } from 'vitest/config';
+
+/**
+ * Condición de export que apunta al código fuente de los paquetes internos (ADR-0005). Las pruebas
+ * la usan para no depender de `dist/`. En el entorno `node` de Vitest manda `ssr.resolve.conditions`
+ * (`resolve.conditions` es del entorno cliente: jsdom, navegador), así que se declara en los dos.
+ */
+export const SOURCE_CONDITION = 'source';
 
 /**
  * Perfiles de cobertura de la "Política de pruebas por módulo, archivo y componente" del plan:
@@ -109,6 +117,8 @@ export function createVitestConfig(options: VitestConfigOptions): ViteUserConfig
 
   return defineConfig({
     plugins: [...(options.plugins ?? [])],
+    resolve: { conditions: [SOURCE_CONDITION, ...defaultClientConditions] },
+    ssr: { resolve: { conditions: [SOURCE_CONDITION, ...defaultServerConditions] } },
     test: {
       include: [...include],
       environment: 'node',

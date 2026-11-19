@@ -21,11 +21,11 @@
       "outputs": []
     },
     "test": {
-      "dependsOn": ["transit", "^build"],
+      "dependsOn": ["transit"],
       "outputs": ["coverage/**"]
     },
     "test:int": {
-      "dependsOn": ["transit", "^build"],
+      "dependsOn": ["transit", "^build", "build"],
       "outputs": [],
       "cache": false
     },
@@ -38,6 +38,14 @@
     },
     "dev": {
       "dependsOn": ["^build"],
+      "passThroughEnv": [
+        "APP_ENV",
+        "HTTP_PORT",
+        "ALLOWED_ORIGINS",
+        "LOG_LEVEL",
+        "TRUST_PROXY",
+        "HTTP_BODY_LIMIT"
+      ],
       "cache": false,
       "persistent": true
     }

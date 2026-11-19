@@ -7,6 +7,7 @@ import {
   createVitestConfig,
   INTEGRATION_TEST_INCLUDE,
   resolveCoverageThresholds,
+  SOURCE_CONDITION,
   UNIT_TEST_INCLUDE,
 } from './base.js';
 
@@ -93,6 +94,14 @@ describe('createVitestConfig', () => {
       lines: 90,
       functions: 80,
     });
+  });
+
+  it('resuelve los paquetes internos por su condición source (ADR-0005), en node y en cliente', () => {
+    const config = createVitestConfig({ profile: 'utility' });
+    expect(config.ssr?.resolve?.conditions?.[0]).toBe(SOURCE_CONDITION);
+    expect(config.ssr?.resolve?.conditions).toContain('node');
+    expect(config.resolve?.conditions?.[0]).toBe(SOURCE_CONDITION);
+    expect(config.resolve?.conditions).toContain('browser');
   });
 
   it('pasa los plugins de Vite que recibe', () => {

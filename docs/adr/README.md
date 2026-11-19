@@ -17,3 +17,7 @@ Cada decisión de arquitectura aceptada deja un ADR corto en esta carpeta (lo pi
 | [0001](0001-toolchain-y-versiones.md) | Toolchain y versiones | Aceptado | 2026-11-12 |
 | [0002](0002-herramienta-de-fronteras.md) | Herramienta que hace cumplir las reglas de dependencia | Aceptado | 2026-11-13 |
 | [0003](0003-capas-y-ubicacion-de-modulos.md) | Capas confirmadas y ubicación de los módulos compartidos | Aceptado | 2026-11-13 |
+| [0004](0004-infraestructura-local.md) | Infraestructura local (Docker Compose) y almacenamiento S3 diferido | Aceptado | 2026-11-18 |
+| [0005](0005-paquetes-internos-compilados.md) | Paquetes internos compilados con `tsc` y condición `source` | Aceptado | 2026-11-18 |
+| [0006](0006-hora-de-los-logs.md) | Excepción de reloj para la hora de los logs y regla de ESLint | Aceptado | 2026-11-18 |
+| [0007](0007-compilacion-y-recarga-de-apps.md) | Compilación y recarga de las apps NestJS: `tsc` + `node --watch` | Aceptado | 2026-11-18 |

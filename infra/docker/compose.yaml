@@ -1,0 +1,69 @@
+# Entorno local (sub-fase 0.6, perfil `infra`): PostgreSQL, Redis y Mailpit.
+# Uso: docker compose -f infra/docker/compose.yaml --env-file infra/docker/.env.example --profile infra up -d --wait
+# o `pnpm infra:up` / `pnpm infra:down` desde la raíz. `down -v` BORRA los datos: nunca sin confirmarlo.
+# Imágenes fijadas por etiqueta y digest multi-arquitectura (D-09). El almacenamiento S3 se difiere a la Fase 3.
+name: fintech-arriendos
+
+services:
+  postgres:
+    image: postgres:17.12-bookworm@sha256:40865bc877a289da75963d97d72b59633f639fc5af7a4e856bfa3714cae5b536
+    profiles: [infra]
+    environment:
+      # Superusuario solo para el arranque; la app y las migraciones usan los roles de init/.
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${POSTGRES_SUPERUSER_PASSWORD:?falta POSTGRES_SUPERUSER_PASSWORD}
+      POSTGRES_DB: postgres
+      FINTECH_OWNER_PASSWORD: ${FINTECH_OWNER_PASSWORD:?falta FINTECH_OWNER_PASSWORD}
+      FINTECH_APP_PASSWORD: ${FINTECH_APP_PASSWORD:?falta FINTECH_APP_PASSWORD}
+      FINTECH_READONLY_PASSWORD: ${FINTECH_READONLY_PASSWORD:?falta FINTECH_READONLY_PASSWORD}
+    ports:
+      - '127.0.0.1:${POSTGRES_PORT:-5432}:5432'
+    volumes:
+      - pg-data:/var/lib/postgresql/data
+      - ./postgres/init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      # Por TCP a propósito: durante el primer arranque el servidor temporal del init solo escucha en
+      # el socket Unix, así que no se marca healthy hasta que terminan los scripts de init/.
+      test: ['CMD-SHELL', 'pg_isready -h 127.0.0.1 -U postgres -d fintech']
+      interval: 5s
+      timeout: 5s
+      retries: 20
+      start_period: 10s
+    restart: unless-stopped
+
+  redis:
+    image: redis:8.8.4-alpine@sha256:1273af45b299d2b8b60d0e400d90aa6c2c5b1794f01d6a7ca60ff3ba6e65efb5
+    profiles: [infra]
+    # Persistencia AOF y `noeviction` (BullMQ no tolera que Redis expulse claves).
+    command: ['redis-server', '--appendonly', 'yes', '--maxmemory-policy', 'noeviction']
+    ports:
+      - '127.0.0.1:${REDIS_PORT:-6379}:6379'
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ['CMD', 'redis-cli', 'ping']
+      interval: 5s
+      timeout: 5s
+      retries: 20
+    restart: unless-stopped
+
+  mailpit:
+    image: axllent/mailpit:v1.34.0@sha256:23a2ef85bc50853ab3093645d1d64679afd8887e89da5e48a88940c172591a4e
+    profiles: [infra]
+    environment:
+      # Solo desarrollo: acepta cualquier credencial SMTP y no exige TLS.
+      MP_SMTP_AUTH_ACCEPT_ANY: 'true'
+      MP_SMTP_AUTH_ALLOW_INSECURE: 'true'
+    ports:
+      - '127.0.0.1:${MAILPIT_UI_PORT:-8025}:8025'
+      - '127.0.0.1:${MAILPIT_SMTP_PORT:-1025}:1025'
+    healthcheck:
+      test: ['CMD', '/mailpit', 'readyz']
+      interval: 5s
+      timeout: 5s
+      retries: 20
+    restart: unless-stopped
+
+volumes:
+  pg-data:
+  redis-data:

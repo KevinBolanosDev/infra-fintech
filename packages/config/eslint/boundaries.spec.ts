@@ -454,5 +454,7 @@ describe('createBoundariesConfig', () => {
 
     expect(rootPath).toBe(fileURLToPath(new URL('../../../', import.meta.url)));
     expect(JSON.stringify(settings['import/resolver'])).toContain('/packages/*/tsconfig.json');
+    // Condición `source` primero: los paquetes compilados se resuelven sin dist/ (ADR-0005).
+    expect(JSON.stringify(settings['import/resolver'])).toContain('"conditionNames":["source"');
   });
 });

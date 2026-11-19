@@ -15,7 +15,9 @@
     "lint:format": "prettier --check .",
     "test": "turbo run test",
     "test:int": "turbo run test:int",
-    "format": "prettier --write ."
+    "format": "prettier --write .",
+    "infra:up": "docker compose -f infra/docker/compose.yaml --env-file infra/docker/.env.example --profile infra up -d --wait",
+    "infra:down": "docker compose -f infra/docker/compose.yaml --env-file infra/docker/.env.example --profile infra down"
   },
   "devDependencies": {
     "@eslint/js": "10.0.1",

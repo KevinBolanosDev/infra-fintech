@@ -53,6 +53,14 @@ Solo se instala cada pieza en la sub-fase que la necesita (criterio "ninguna dep
 | @swc/core | `1.16.22` | 0.3 | En `allowBuilds` (script `postinstall`) |
 | ~~esbuild~~ | — | — | Retirado de `allowBuilds` en 0.3: Vite 8 no lo instala |
 | eslint-plugin-boundaries | `7.4.3` | 0.4 | Reglas de dependencia (ADR-0002). Instalada cuando cumplió la espera de 24 h, sin excepción |
+| pino | `10.4.0` | 0.7 | Dependencia de `@repo/observability` (fijada por el plan) |
+| pino-pretty | `13.2.0` | 0.7 | Solo desarrollo, en `@repo/observability` |
+| @nestjs/common, @nestjs/core, @nestjs/platform-express, @nestjs/testing | `12.5.1` | 0.8 | Express (D-10). `@nestjs/testing` solo desarrollo |
+| @nestjs/config | `12.1.1` | 0.8 | |
+| reflect-metadata, rxjs | `0.2.2`, `7.8.2` | 0.8 | |
+| zod | `4.6.7` | 0.8 | Validación del entorno de `apps/api` |
+| helmet | `8.3.0` | 0.8 | |
+| supertest, @types/supertest, @types/express | `7.3.2`, `7.2.1`, `5.0.6` | 0.8 | Solo desarrollo |
 | eslint-import-resolver-typescript | `4.4.5` | 0.4 | Resolutor de imports para las fronteras (ADR-0002). `unrs-resolver: false` en `allowBuilds` |
 | @nestjs/core, @nestjs/common | `12.5.0` | 0.8 | Solo ESM; engines `>= 20` |
 | prisma, @prisma/client, @prisma/adapter-pg | `7.10.1` | 0.10 | `prisma` y `@prisma/engines` en `allowBuilds` |

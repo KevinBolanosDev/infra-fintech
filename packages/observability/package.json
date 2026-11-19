@@ -1,0 +1,27 @@
+{
+  "name": "@repo/observability",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Logger JSON con enmascarado de datos personales y contexto de ejecución (request_id, correlation_id).",
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "source": "./src/index.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "lint": "eslint --max-warnings=0 .",
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "pino": "10.4.0"
+  },
+  "devDependencies": {
+    "@repo/config": "workspace:*",
+    "pino-pretty": "13.2.0"
+  }
+}
