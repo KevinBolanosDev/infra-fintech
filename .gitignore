@@ -18,7 +18,7 @@ dist/
 coverage/
 *.tsbuildinfo
 
-# Cliente de Prisma generado (se genera en el grafo de Turbo; ruta definitiva según D-12, sub-fase 0.10)
+# Cliente de Prisma generado (tarea db:generate de Turbo; D-12, ADR-0009)
 packages/db/src/generated/
 
 # Sistema operativo y editores

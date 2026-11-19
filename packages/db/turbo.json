@@ -1,0 +1,25 @@
+{
+  "$schema": "../../node_modules/turbo/schema.json",
+  "extends": ["//"],
+  "tasks": {
+    "transit": {
+      "dependsOn": ["^transit", "db:generate"]
+    },
+    "db:generate": {
+      "inputs": ["prisma/schema.prisma", "$TURBO_ROOT$/prisma.config.ts"],
+      "outputs": ["src/generated/**"]
+    },
+    "build": {
+      "dependsOn": ["^build", "db:generate"]
+    },
+    "typecheck": {
+      "dependsOn": ["transit", "^build", "db:generate"]
+    },
+    "lint": {
+      "dependsOn": ["transit", "^build", "db:generate"]
+    },
+    "test": {
+      "dependsOn": ["transit", "db:generate"]
+    }
+  }
+}

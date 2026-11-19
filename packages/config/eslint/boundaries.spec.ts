@@ -315,6 +315,8 @@ const ALLOWED: Record<string, readonly Edge[]> = {
     [web('shared'), './api/infrastructure/index.js'],
     [pkg('db'), '@repo/domain', 'export-type'],
     ['packages/db/prisma.config.ts', 'prisma/config'],
+    // prisma.config.ts vive en la raíz (D-12 = a, ADR-0009): fuera de todo paquete, sin reglas.
+    ['prisma.config.ts', 'prisma/config'],
     [charges('infrastructure'), '@prisma/client/sql'],
   ],
   'testing desde pruebas': [

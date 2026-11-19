@@ -1,0 +1,9 @@
+{
+  "$schema": "https://json.schemastore.org/tsconfig",
+  "display": "Raíz: solo los archivos de configuración en TypeScript (prisma.config.ts)",
+  "extends": "@repo/config/tsconfig/node.json",
+  "compilerOptions": {
+    "noEmit": true
+  },
+  "include": ["prisma.config.ts"]
+}

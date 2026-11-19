@@ -1,0 +1,16 @@
+// Esquema de la plataforma (Prisma 7). Convenciones de datos: docs/adr/0009-convenciones-de-datos.md.
+// La URL de conexión vive en prisma.config.ts (raíz), no aquí.
+// Sub-fase 0.10: sin modelos todavía.
+
+generator client {
+  provider               = "prisma-client"
+  output                 = "../src/generated/prisma"
+  runtime                = "nodejs"
+  moduleFormat           = "esm"
+  generatedFileExtension = "ts"
+  importFileExtension    = "js"
+}
+
+datasource db {
+  provider = "postgresql"
+}

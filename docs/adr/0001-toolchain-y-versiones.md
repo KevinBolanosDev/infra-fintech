@@ -63,7 +63,7 @@ Solo se instala cada pieza en la sub-fase que la necesita (criterio "ninguna dep
 | supertest, @types/supertest, @types/express | `7.3.2`, `7.2.1`, `5.0.6` | 0.8 | Solo desarrollo |
 | eslint-import-resolver-typescript | `4.4.5` | 0.4 | Resolutor de imports para las fronteras (ADR-0002). `unrs-resolver: false` en `allowBuilds` |
 | @nestjs/core, @nestjs/common | `12.5.0` | 0.8 | Solo ESM; engines `>= 20` |
-| prisma, @prisma/client, @prisma/adapter-pg | `7.10.1` | 0.10 | `prisma` y `@prisma/engines` en `allowBuilds` |
+| prisma, @prisma/client, @prisma/adapter-pg | `7.10.1` | 0.10 | `prisma` y `@prisma/engines` en `allowBuilds`. `prisma` en la raíz (desarrollo); cliente y adaptador en `@repo/db` (ADR-0009). `pg` y `@types/pg` `8.23.1` entran como dependencias del adaptador |
 
 Las demás versiones de la matriz 3.4 del plan (`nestjs-pino`, `@sentry/nestjs`, `bullmq`, `zod`, etc.) se vuelven a verificar contra el registro en la sub-fase que las instala y se anotan en el ADR que corresponda.
 
