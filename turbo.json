@@ -26,6 +26,7 @@
     },
     "test:int": {
       "dependsOn": ["transit", "^build", "build"],
+      "passThroughEnv": ["DOCKER_HOST", "DOCKER_CONFIG", "DOCKER_CERT_PATH", "DOCKER_TLS_VERIFY"],
       "outputs": [],
       "cache": false
     },

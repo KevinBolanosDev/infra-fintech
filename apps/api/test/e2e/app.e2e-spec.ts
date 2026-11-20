@@ -5,6 +5,11 @@ import request from 'supertest';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
 import { createApp } from '../../src/create-app.js';
+import {
+  NEST_TEST_TIMEOUT_MS,
+  NEST_WARMUP_TIMEOUT_MS,
+  warmUpNest,
+} from '../support/nest-test-timeouts.js';
 
 const ALLOWED = 'https://app.example.test';
 
@@ -13,7 +18,9 @@ function expressOf(app: NestExpressApplication): { get: (key: string) => unknown
   return app.getHttpAdapter().getInstance() as { get: (key: string) => unknown };
 }
 
-describe('API (e2e en proceso)', () => {
+beforeAll(warmUpNest, NEST_WARMUP_TIMEOUT_MS);
+
+describe('API (e2e en proceso)', { timeout: NEST_TEST_TIMEOUT_MS }, () => {
   let app: NestExpressApplication;
 
   beforeAll(async () => {
@@ -88,7 +95,7 @@ describe('API (e2e en proceso)', () => {
   });
 });
 
-describe('API fuera de test', () => {
+describe('API fuera de test', { timeout: NEST_TEST_TIMEOUT_MS }, () => {
   it('aplica TRUST_PROXY como número de proxies y arranca con la hora real del logger', async () => {
     const { app, config } = await createApp({
       APP_ENV: 'production',

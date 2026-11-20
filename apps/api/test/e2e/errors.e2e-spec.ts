@@ -6,12 +6,19 @@ import request from 'supertest';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
 import { createApp } from '../../src/create-app.js';
+import {
+  NEST_TEST_TIMEOUT_MS,
+  NEST_WARMUP_TIMEOUT_MS,
+  warmUpNest,
+} from '../support/nest-test-timeouts.js';
 import { TestErrorsModule } from '../support/test-errors.module.js';
 
 const ENV = { APP_ENV: 'test', LOG_LEVEL: 'info', HTTP_BODY_LIMIT: '1kb' };
 const REQUEST_ID = '0b5d8a5e-1f3c-4c8e-9a52-6f1f3d2b7c10';
 
-describe('Errores RFC 9457 y contexto de petición (e2e)', () => {
+beforeAll(warmUpNest, NEST_WARMUP_TIMEOUT_MS);
+
+describe('Errores RFC 9457 y contexto de petición (e2e)', { timeout: NEST_TEST_TIMEOUT_MS }, () => {
   let app: NestExpressApplication;
   const logLines: string[] = [];
   const logs = () => logLines.map((line) => JSON.parse(line) as Record<string, unknown>);
@@ -148,26 +155,30 @@ describe('Errores RFC 9457 y contexto de petición (e2e)', () => {
   });
 });
 
-describe('El controlador de pruebas no existe en la app de producción', () => {
-  it('createApp rechaza extraModules fuera de APP_ENV=test', async () => {
-    await expect(
-      createApp(
-        { APP_ENV: 'production', LOG_LEVEL: 'silent' },
-        { extraModules: [TestErrorsModule] },
-      ),
-    ).rejects.toThrow('extraModules solo se permite con APP_ENV=test');
-  });
+describe(
+  'El controlador de pruebas no existe en la app de producción',
+  { timeout: NEST_TEST_TIMEOUT_MS },
+  () => {
+    it('createApp rechaza extraModules fuera de APP_ENV=test', async () => {
+      await expect(
+        createApp(
+          { APP_ENV: 'production', LOG_LEVEL: 'silent' },
+          { extraModules: [TestErrorsModule] },
+        ),
+      ).rejects.toThrow('extraModules solo se permite con APP_ENV=test');
+    });
 
-  it('sin extraModules, /v1/pruebas/* responde 404 (bootstrap nunca los pasa)', async () => {
-    const { app } = await createApp({ APP_ENV: 'test', LOG_LEVEL: 'silent' });
-    await app.init();
-    for (const path of [
-      '/v1/pruebas/error-inesperado',
-      '/v1/pruebas/error-dominio',
-      '/v1/pruebas/contexto',
-    ]) {
-      await request(app.getHttpServer()).get(path).expect(404);
-    }
-    await app.close();
-  });
-});
+    it('sin extraModules, /v1/pruebas/* responde 404 (bootstrap nunca los pasa)', async () => {
+      const { app } = await createApp({ APP_ENV: 'test', LOG_LEVEL: 'silent' });
+      await app.init();
+      for (const path of [
+        '/v1/pruebas/error-inesperado',
+        '/v1/pruebas/error-dominio',
+        '/v1/pruebas/contexto',
+      ]) {
+        await request(app.getHttpServer()).get(path).expect(404);
+      }
+      await app.close();
+    });
+  },
+);

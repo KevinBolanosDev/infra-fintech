@@ -1,10 +1,17 @@
 import 'reflect-metadata';
 
-import { describe, expect, it, vi } from 'vitest';
+import { beforeAll, describe, expect, it, vi } from 'vitest';
 
+import {
+  NEST_TEST_TIMEOUT_MS,
+  NEST_WARMUP_TIMEOUT_MS,
+  warmUpNest,
+} from '../test/support/nest-test-timeouts.js';
 import { bootstrap } from './bootstrap.js';
 
-describe('bootstrap', () => {
+beforeAll(warmUpNest, NEST_WARMUP_TIMEOUT_MS);
+
+describe('bootstrap', { timeout: NEST_TEST_TIMEOUT_MS }, () => {
   it('con un entorno inválido escribe un mensaje claro sin valores y deja el código de salida en 1', async () => {
     const writeError = vi.fn<(message: string) => void>();
     const setExitCode = vi.fn<(code: number) => void>();
