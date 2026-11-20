@@ -5,9 +5,9 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { problemDetailsSchema } from '@repo/contracts';
+import { DomainError } from '@repo/domain';
 import { describe, expect, it } from 'vitest';
 
-import { DomainError } from '../errors/domain-error.js';
 import { RequestValidationError } from '../validation/request-validation.error.js';
 import { instanceOf, mapToProblem } from './problem-mapper.js';
 

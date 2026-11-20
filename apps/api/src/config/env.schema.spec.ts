@@ -11,7 +11,44 @@ describe('parseEnv', () => {
       LOG_LEVEL: 'info',
       TRUST_PROXY: false,
       HTTP_BODY_LIMIT: '100kb',
+      CLOCK_MODE: 'system',
     });
+  });
+
+  it('reloj controlable con REDIS_URL fuera de producción', () => {
+    expect(
+      parseEnv({
+        APP_ENV: 'sandbox',
+        CLOCK_MODE: 'controllable',
+        REDIS_URL: 'redis://redis.sandbox.example:6379',
+      }),
+    ).toMatchObject({
+      CLOCK_MODE: 'controllable',
+      REDIS_URL: 'redis://redis.sandbox.example:6379',
+    });
+    expect(
+      parseEnv({
+        APP_ENV: 'local',
+        CLOCK_MODE: 'controllable',
+        REDIS_URL: 'rediss://127.0.0.1:6380',
+      }).CLOCK_MODE,
+    ).toBe('controllable');
+  });
+
+  it.each([
+    [
+      { APP_ENV: 'production', CLOCK_MODE: 'controllable', REDIS_URL: 'redis://r:6379' },
+      'CLOCK_MODE (controllable no se permite con APP_ENV=production)',
+    ],
+    [
+      { APP_ENV: 'local', CLOCK_MODE: 'controllable' },
+      'REDIS_URL (es obligatoria con CLOCK_MODE=controllable)',
+    ],
+    [{ APP_ENV: 'local', CLOCK_MODE: 'congelado' }, 'CLOCK_MODE ('],
+    [{ APP_ENV: 'local', REDIS_URL: 'http://127.0.0.1:6379' }, 'REDIS_URL (debe ser redis://'],
+    [{ APP_ENV: 'local', REDIS_URL: 'redis://[mal' }, 'REDIS_URL (debe ser una URL válida)'],
+  ])('rechaza la configuración del reloj %j', (env, problem) => {
+    expect(() => parseEnv(env)).toThrow(problem);
   });
 
   it('interpreta puertos, orígenes, nivel, proxies y límite de cuerpo', () => {
@@ -31,6 +68,7 @@ describe('parseEnv', () => {
       LOG_LEVEL: 'debug',
       TRUST_PROXY: 2,
       HTTP_BODY_LIMIT: '1mb',
+      CLOCK_MODE: 'system',
     });
   });
 

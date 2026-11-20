@@ -42,6 +42,10 @@ La regla tampoco se hacía cumplir mecánicamente.
 - Las pruebas no pueden usar `new Date()` para "ahora": usan fechas fijas o el reloj controlable (0.12).
 - La regla no cubre `performance.now()` ni `process.hrtime()` (miden duración, no fecha); si se usan para lógica de negocio, la revisión lo detecta.
 
+## Seguimiento (2026-11-20, sub-fase 0.12)
+
+Sin cambiar la decisión: la excepción de `SystemClock` quedó resuelta con la opción `systemClockFiles` de `createBaseConfig` (ADR-0011). El `simulatedAt` del punto 3 se pospone a la Fase 2, con el panel de simulación (ADR-0011, punto 9).
+
 ## Verificación
 
 ```bash

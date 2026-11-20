@@ -45,7 +45,9 @@
         "ALLOWED_ORIGINS",
         "LOG_LEVEL",
         "TRUST_PROXY",
-        "HTTP_BODY_LIMIT"
+        "HTTP_BODY_LIMIT",
+        "CLOCK_MODE",
+        "REDIS_URL"
       ],
       "cache": false,
       "persistent": true

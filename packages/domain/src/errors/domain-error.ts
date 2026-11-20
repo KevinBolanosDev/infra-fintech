@@ -1,10 +1,12 @@
-import { ERROR_CODE_PATTERN } from '@repo/contracts';
+/**
+ * Formato de los códigos de error: MAYÚSCULAS_CON_GUION_BAJO. `@repo/contracts` tiene su propia copia
+ * (ni `domain` ni `contracts` pueden importarse entre sí); `apps/api` prueba que coinciden (ADR-0011).
+ */
+export const ERROR_CODE_PATTERN = /^[A-Z][A-Z0-9]*(_[A-Z0-9]+)*$/;
 
 /**
  * Error de negocio con un código estable y un mensaje **pensado para el cliente**. No sabe nada de
- * HTTP: el filtro de errores traduce el código a estado (por defecto 422).
- *
- * Vive aquí provisionalmente (decisión Q-3 de la 0.9, ADR-0008); pasa a `@repo/domain` en la 0.12.
+ * HTTP: la api traduce el código a estado (por defecto 422, ADR-0008).
  */
 export class DomainError extends Error {
   override readonly name: string = 'DomainError';

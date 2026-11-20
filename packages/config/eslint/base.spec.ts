@@ -17,12 +17,20 @@ const packageDir = fileURLToPath(new URL('..', import.meta.url));
 const ESLINT_WARMUP_TIMEOUT_MS = 60_000;
 const ESLINT_TEST_TIMEOUT_MS = 20_000;
 
-function createEslint(fix = false, allowSystemTime = false): ESLint {
+function createEslint(
+  fix = false,
+  allowSystemTime = false,
+  systemClockFiles: readonly string[] = [],
+): ESLint {
   return new ESLint({
     cwd: packageDir,
     fix,
     overrideConfigFile: true,
-    overrideConfig: createBaseConfig({ tsconfigRootDir: packageDir, allowSystemTime }),
+    overrideConfig: createBaseConfig({
+      tsconfigRootDir: packageDir,
+      allowSystemTime,
+      systemClockFiles,
+    }),
   });
 }
 
@@ -80,6 +88,42 @@ describe('regla de reloj (ADR-0006)', { timeout: ESLINT_TEST_TIMEOUT_MS }, () =>
 
   it('allowSystemTime (solo observability) desactiva la regla', async () => {
     expect(await systemTimeErrors(SYSTEM_TIME_SOURCE, 'src/logger.js', true)).toEqual([]);
+  });
+
+  it('systemClockFiles exceptúa solo ese archivo (SystemClock, ADR-0011), no a sus vecinos', async () => {
+    const files = ['src/clock/infrastructure/system.clock.ts'];
+    const ruleFor = async (filePath: string) => {
+      const config = (await createEslint(false, false, files).calculateConfigForFile(filePath)) as {
+        rules: Record<string, unknown>;
+      };
+      return severityOf(config.rules['no-restricted-syntax']);
+    };
+
+    expect([0, 'off']).toContain(await ruleFor('src/clock/infrastructure/system.clock.ts'));
+    for (const neighbour of [
+      'src/clock/infrastructure/redis-controllable.clock.ts',
+      'src/clock/infrastructure/system.clock.spec.ts',
+      'src/clock/clock.module.ts',
+      'src/other/infrastructure/system.clock.ts',
+    ]) {
+      expect([2, 'error']).toContain(await ruleFor(neighbour));
+    }
+  });
+
+  it('systemClockFiles no admite comodines ni otros archivos', () => {
+    for (const file of [
+      'src/**/system.clock.ts',
+      'src/clock/infrastructure/other.ts',
+      'src/clock/infrastructure/evil-system.clock.ts',
+      '../other/src/system.clock.ts',
+      '/abs/src/system.clock.ts',
+      'src\\clock\\system.clock.ts',
+      'src/{a,b}/system.clock.ts',
+    ]) {
+      expect(() =>
+        createBaseConfig({ tsconfigRootDir: packageDir, systemClockFiles: [file] }),
+      ).toThrow('systemClockFiles solo admite rutas relativas exactas');
+    }
   });
 
   it('permite clases vacías con decorador (módulos de NestJS) y nada más', async () => {

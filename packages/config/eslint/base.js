@@ -71,11 +71,30 @@ export const SYSTEM_TIME_RESTRICTIONS = [
  * - Sin lecturas de la hora del sistema (`Date.now()`, `new Date()`, `Date()`), también en pruebas y
  *   archivos de configuración: las pruebas usan fechas explícitas o un reloj inyectado.
  *
- * @param {{ tsconfigRootDir: string, allowSystemTime?: boolean }} options
+ * @param {{ tsconfigRootDir: string, allowSystemTime?: boolean, systemClockFiles?: readonly string[] }} options
  *   `tsconfigRootDir`: directorio del paquete que consume la configuración.
  *   `allowSystemTime`: solo `packages/observability` (la hora del log es operativa, ADR-0006).
+ *   `systemClockFiles`: rutas exactas, relativas al paquete, que pueden leer la hora del sistema. Solo
+ *   `packages/platform` con `src/clock/infrastructure/system.clock.ts` (`SystemClock`, ADR-0011).
  */
-export function createBaseConfig({ tsconfigRootDir, allowSystemTime = false }) {
+export function createBaseConfig({
+  tsconfigRootDir,
+  allowSystemTime = false,
+  systemClockFiles = [],
+}) {
+  for (const file of systemClockFiles) {
+    const segments = file.split('/');
+    if (
+      /[*?{}[\]\\]/.test(file) ||
+      file.startsWith('/') ||
+      segments.includes('..') ||
+      segments.at(-1) !== 'system.clock.ts'
+    ) {
+      throw new Error(
+        `systemClockFiles solo admite rutas relativas exactas a un archivo system.clock.ts: ${file}`,
+      );
+    }
+  }
   return defineConfig(
     globalIgnores(IGNORED_PATHS),
     createBoundariesConfig(),
@@ -106,5 +125,14 @@ export function createBaseConfig({ tsconfigRootDir, allowSystemTime = false }) {
       files: ['**/*.{js,mjs,cjs}'],
       extends: [tseslint.configs.disableTypeChecked],
     },
+    // Excepción acotada (ADR-0011): `SystemClock` es el único lugar de negocio que lee la hora.
+    ...(systemClockFiles.length === 0
+      ? []
+      : [
+          {
+            files: [...systemClockFiles],
+            rules: { 'no-restricted-syntax': /** @type {const} */ ('off') },
+          },
+        ]),
   );
 }

@@ -14,6 +14,7 @@ describe('@repo/testing', () => {
       'buildTruncateStatement',
       'harnessUrls',
       'createTestPrismaClient',
+      'ManualClock',
     ] as const) {
       expect(typeof testing[name]).toBe('function');
     }

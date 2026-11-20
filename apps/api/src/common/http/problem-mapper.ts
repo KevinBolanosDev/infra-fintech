@@ -2,8 +2,8 @@ import { randomUUID } from 'node:crypto';
 
 import { HttpException } from '@nestjs/common';
 import { type ProblemDetailItem, type ProblemDetails, problemTypeFor } from '@repo/contracts';
+import { DomainError } from '@repo/domain';
 
-import { DomainError } from '../errors/domain-error.js';
 import { RequestValidationError } from '../validation/request-validation.error.js';
 
 /** Estado HTTP de cada error de dominio; sin entrada, 422. Se completa al crear los módulos. */

@@ -3,10 +3,10 @@
 import { setTimeout as sleep } from 'node:timers/promises';
 
 import { Body, Controller, ForbiddenException, Get, Module, Post, Query } from '@nestjs/common';
+import { DomainError } from '@repo/domain';
 import { executionContext } from '@repo/observability';
 import { z } from 'zod';
 
-import { DomainError } from '../../src/common/errors/domain-error.js';
 import { createZodDto } from '../../src/common/validation/zod-validation.pipe.js';
 
 const createTestChargeSchema = z.object({

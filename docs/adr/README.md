@@ -24,3 +24,4 @@ Cada decisión de arquitectura aceptada deja un ADR corto en esta carpeta (lo pi
 | [0008](0008-contrato-de-errores-y-validacion.md) | Contrato público de errores (RFC 9457) y validación con Zod sin `nestjs-zod` | Aceptado | 2026-11-19 |
 | [0009](0009-convenciones-de-datos.md) | Convenciones de datos, Prisma 7 en `packages/db` y flujo de migraciones | Aceptado | 2026-11-19 |
 | [0010](0010-harness-de-integracion.md) | Harness de pruebas de integración y migraciones contra el contenedor desechable | Aceptado | 2026-11-19 |
+| [0011](0011-reloj-de-negocio.md) | Reloj de negocio (`ClockService`), excepción de ESLint y traslado de `DomainError` | Aceptado | 2026-11-20 |

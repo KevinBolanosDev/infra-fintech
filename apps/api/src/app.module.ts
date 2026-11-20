@@ -1,5 +1,6 @@
 import { type DynamicModule, Module, type Type } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
+import { ClockModule } from '@repo/platform';
 
 import type { AppConfig } from './config/env.schema.js';
 import { HealthModule } from './health/health.module.js';
@@ -23,6 +24,12 @@ export class AppModule {
           isGlobal: true,
           ignoreEnvFile: true,
           load: [() => ({ [APP_CONFIG_KEY]: config })],
+        }),
+        // Reloj de negocio global (ADR-0011): `ClockService` en cualquier módulo.
+        ClockModule.forRoot({
+          mode: config.CLOCK_MODE,
+          appEnv: config.APP_ENV,
+          redisUrl: config.REDIS_URL,
         }),
         HealthModule,
         ...extraModules,

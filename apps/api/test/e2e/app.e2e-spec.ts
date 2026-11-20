@@ -1,6 +1,7 @@
 import 'reflect-metadata';
 
 import type { NestExpressApplication } from '@nestjs/platform-express';
+import { ClockService, ControllableClockService } from '@repo/platform';
 import request from 'supertest';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
@@ -92,6 +93,39 @@ describe('API (e2e en proceso)', { timeout: NEST_TEST_TIMEOUT_MS }, () => {
 
   it('trust proxy queda desactivado por defecto', () => {
     expect(expressOf(app).get('trust proxy')).toBe(false);
+  });
+});
+
+describe('Reloj de negocio en la api (ADR-0011)', { timeout: NEST_TEST_TIMEOUT_MS }, () => {
+  it('por defecto el reloj es el del sistema: hay ClockService y no hay reloj controlable', async () => {
+    const { app, config } = await createApp({ APP_ENV: 'test', LOG_LEVEL: 'silent' });
+    expect(config.CLOCK_MODE).toBe('system');
+    expect(app.get(ClockService)).toBeInstanceOf(ClockService);
+    expect(() => app.get(ControllableClockService)).toThrow();
+    await app.close();
+  });
+
+  it('no arranca con el reloj controlable en producción', async () => {
+    await expect(
+      createApp({
+        APP_ENV: 'production',
+        LOG_LEVEL: 'silent',
+        CLOCK_MODE: 'controllable',
+        REDIS_URL: 'redis://127.0.0.1:1',
+      }),
+    ).rejects.toThrow('CLOCK_MODE (controllable no se permite con APP_ENV=production)');
+  });
+
+  it('con CLOCK_MODE=controllable fuera de producción arranca y cierra sin conectar a Redis', async () => {
+    const { app } = await createApp({
+      APP_ENV: 'test',
+      LOG_LEVEL: 'silent',
+      CLOCK_MODE: 'controllable',
+      REDIS_URL: 'redis://127.0.0.1:1',
+    });
+    await app.init();
+    expect(app.get(ControllableClockService)).toBe(app.get(ClockService));
+    await app.close();
   });
 });
 

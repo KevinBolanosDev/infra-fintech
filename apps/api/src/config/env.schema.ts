@@ -1,4 +1,5 @@
 import { APP_ENVS, LOG_LEVELS } from '@repo/observability';
+import { CLOCK_MODES } from '@repo/platform';
 import { z } from 'zod';
 
 /** `http(s)://host[:puerto]`: sin `*`, sin ruta, sin barra final, sin espacios. */
@@ -6,6 +7,7 @@ const ORIGIN_PATTERN = /^https?:\/\/[^/\s*]+$/;
 /** Hosts de la propia máquina: no son orígenes válidos fuera de `local` y `test`. */
 const LOOPBACK_HOSTS = new Set(['localhost', '127.0.0.1', '[::1]']);
 const BODY_LIMIT_PATTERN = /^\d+(b|kb|mb)$/;
+const REDIS_URL_PATTERN = /^rediss?:\/\/\S+$/;
 
 const allowedOrigins = z
   .string()
@@ -61,6 +63,14 @@ export const envSchema = z.object({
     .string()
     .regex(BODY_LIMIT_PATTERN, 'debe ser un tamaño como 100kb o 1mb')
     .default('100kb'),
+  /** Reloj de negocio (ADR-0011): `system` (por defecto) o `controllable` (Redis; nunca en producción). */
+  CLOCK_MODE: z.enum(CLOCK_MODES).default('system'),
+  /** Redis del reloj controlable; obligatorio solo con `CLOCK_MODE=controllable`. */
+  REDIS_URL: z
+    .string()
+    .regex(REDIS_URL_PATTERN, 'debe ser redis://… o rediss://…')
+    .refine((value) => URL.canParse(value), 'debe ser una URL válida')
+    .optional(),
 });
 
 function isLoopbackOrigin(origin: string): boolean {
@@ -85,6 +95,20 @@ const appEnvSchema = envSchema.superRefine((config, context) => {
       path: ['ALLOWED_ORIGINS'],
       message:
         'fuera de local y test cada origen debe ser https:// y no localhost, 127.0.0.1 ni ::1',
+    });
+  }
+  if (config.CLOCK_MODE === 'controllable' && config.APP_ENV === 'production') {
+    context.addIssue({
+      code: 'custom',
+      path: ['CLOCK_MODE'],
+      message: 'controllable no se permite con APP_ENV=production',
+    });
+  }
+  if (config.CLOCK_MODE === 'controllable' && config.REDIS_URL === undefined) {
+    context.addIssue({
+      code: 'custom',
+      path: ['REDIS_URL'],
+      message: 'es obligatoria con CLOCK_MODE=controllable',
     });
   }
   if (config.HTTP_PORT === 0 && !isDevelopment) {
@@ -116,7 +140,8 @@ export function parseEnv(env: Readonly<Record<string, string | undefined>>): App
   const problems = result.error.issues.map((issue) => {
     const variable = issue.path.map(String).join('.');
     // Zod 4 no incluye el valor recibido en los issues; se mira el entorno solo para saber si falta.
-    const missing = env[String(issue.path[0])] === undefined;
+    // Las reglas propias (`custom`) dan su motivo aunque la variable falte (p. ej. REDIS_URL).
+    const missing = env[String(issue.path[0])] === undefined && issue.code !== 'custom';
     return `${variable} (${missing ? 'falta' : issue.message})`;
   });
   throw new EnvValidationError(problems);
