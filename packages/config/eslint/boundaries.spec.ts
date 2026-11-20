@@ -3,7 +3,7 @@ import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import { ESLint } from 'eslint';
-import { describe, expect, it } from 'vitest';
+import { beforeAll, describe, expect, it } from 'vitest';
 
 import { ALLOWED_INTERNAL, APPS, createBoundariesConfig, PACKAGES } from './boundaries.js';
 
@@ -357,7 +357,24 @@ const ALLOWED: Record<string, readonly Edge[]> = {
   ],
 };
 
-describe('createBoundariesConfig', () => {
+/**
+ * La primera llamada a ESLint de un proceso carga en frío typescript-eslint, TypeScript y los
+ * plugins: unos 1,2 s con la máquina tranquila, pero más de 5 s (el límite por defecto de Vitest) en
+ * un clon limpio con las tareas de Turbo en paralelo. Ese costo se paga una sola vez, en un
+ * calentamiento con su propio límite, y las pruebas de este archivo tienen un límite acotado para
+ * absorber la carga de CI. El perfil unitario global no cambia.
+ */
+const ESLINT_WARMUP_TIMEOUT_MS = 60_000;
+const ESLINT_TEST_TIMEOUT_MS = 20_000;
+
+beforeAll(async () => {
+  // Calentamiento: el primer lint carga el parser y el resolutor de imports de TypeScript.
+  await eslint.lintText("export { value } from '@repo/domain';\n", {
+    filePath: join(FIXTURE, 'packages/contracts/src/index.ts'),
+  });
+}, ESLINT_WARMUP_TIMEOUT_MS);
+
+describe('createBoundariesConfig', { timeout: ESLINT_TEST_TIMEOUT_MS }, () => {
   // Guarda: el plugin captura los errores de sus propios selectores (por ejemplo, un `to: []`
   // vacío) y la política rota simplemente no se evalúa, sin que ninguna prueba lo note.
   it('ninguna política tiene listas de selectores vacías ni selectores vacíos', () => {

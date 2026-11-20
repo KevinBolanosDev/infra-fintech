@@ -1,11 +1,21 @@
 import { fileURLToPath } from 'node:url';
 
 import { ESLint } from 'eslint';
-import { describe, expect, it } from 'vitest';
+import { beforeAll, describe, expect, it } from 'vitest';
 
 import { createBaseConfig, IGNORED_PATHS } from './base.js';
 
 const packageDir = fileURLToPath(new URL('..', import.meta.url));
+
+/**
+ * La primera llamada a ESLint de un proceso carga en frío typescript-eslint, TypeScript y los
+ * plugins: unos 1,2 s con la máquina tranquila, pero más de 5 s (el límite por defecto de Vitest) en
+ * un clon limpio con las tareas de Turbo en paralelo. Ese costo se paga una sola vez, en un
+ * calentamiento con su propio límite, y las pruebas de este archivo tienen un límite acotado para
+ * absorber la carga de CI. El perfil unitario global no cambia.
+ */
+const ESLINT_WARMUP_TIMEOUT_MS = 60_000;
+const ESLINT_TEST_TIMEOUT_MS = 20_000;
 
 function createEslint(fix = false, allowSystemTime = false): ESLint {
   return new ESLint({
@@ -23,6 +33,12 @@ async function systemTimeErrors(source: string, filePath: string, allowSystemTim
     .map((message) => message.line);
 }
 
+beforeAll(async () => {
+  // Calentamiento: lint sin tipos (.js) y configuración de un .ts, lo que usan las pruebas.
+  await createEslint().lintText('export const warm = 1;\n', { filePath: 'src/warmup.js' });
+  await createEslint().calculateConfigForFile('src/warmup.service.ts');
+}, ESLINT_WARMUP_TIMEOUT_MS);
+
 const SYSTEM_TIME_SOURCE = [
   'export const a = Date.now();',
   'export const b = new Date();',
@@ -32,7 +48,7 @@ const SYSTEM_TIME_SOURCE = [
   'export const f = Date.parse(e.toISOString());',
 ].join('\n');
 
-describe('regla de reloj (ADR-0006)', () => {
+describe('regla de reloj (ADR-0006)', { timeout: ESLINT_TEST_TIMEOUT_MS }, () => {
   it.each([
     'src/charge.js',
     'src/charge.spec.js',
@@ -87,7 +103,7 @@ function severityOf(rule: unknown): unknown {
   return Array.isArray(rule) ? rule[0] : rule;
 }
 
-describe('createBaseConfig', () => {
+describe('createBaseConfig', { timeout: ESLINT_TEST_TIMEOUT_MS }, () => {
   it.each([
     'generated/prisma/client.ts',
     'prisma/migrations/0001_init/migration.ts',
