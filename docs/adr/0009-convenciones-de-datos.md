@@ -2,7 +2,7 @@
 
 | Campo | Valor |
 | --- | --- |
-| Estado | Propuesto: decisiones D-12 y Q-1 a Q-6 de la sub-fase 0.10 aprobadas por el usuario (2026-11-19); las convenciones de la sección 1 pasan a Aceptado tras la revisión humana del checkpoint de la 0.10 |
+| Estado | Aceptado (decisiones D-12 y Q-1 a Q-6 de la sub-fase 0.10 y checkpoint de revisión humana aprobados por el usuario, 2026-11-19) |
 | Fecha | 2026-11-19 |
 | Decisores | Usuario (dueño del proyecto) |
 | Sub-fase / fase | 0.10 (Fase 0) |
