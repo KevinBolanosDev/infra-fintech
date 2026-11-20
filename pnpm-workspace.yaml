@@ -16,3 +16,10 @@ allowBuilds:
   # Denegado (0.4): su postinstall solo comprueba el binario nativo, que pnpm ya instala como
   # dependencia opcional (@unrs/resolver-binding-*). Lo usa eslint-import-resolver-typescript.
   unrs-resolver: false
+  # Denegados (0.11): llegan con Testcontainers (dockerode/docker-modem) y no hacen falta.
+  # ssh2 usa SSH solo para reenviar puertos con un contenedor sshd, que no usamos; su enlace nativo
+  # de cifrado es opcional y sin él funciona en JS. cpu-features es una dependencia opcional de ssh2
+  # que compila con node-gyp. El postinstall de protobufjs solo comprueba versiones.
+  cpu-features: false
+  ssh2: false
+  protobufjs: false

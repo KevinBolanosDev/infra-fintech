@@ -22,4 +22,5 @@ Cada decisión de arquitectura aceptada deja un ADR corto en esta carpeta (lo pi
 | [0006](0006-hora-de-los-logs.md) | Excepción de reloj para la hora de los logs y regla de ESLint | Aceptado | 2026-11-18 |
 | [0007](0007-compilacion-y-recarga-de-apps.md) | Compilación y recarga de las apps NestJS: `tsc` + `node --watch` | Aceptado | 2026-11-18 |
 | [0008](0008-contrato-de-errores-y-validacion.md) | Contrato público de errores (RFC 9457) y validación con Zod sin `nestjs-zod` | Aceptado | 2026-11-19 |
-| [0009](0009-convenciones-de-datos.md) | Convenciones de datos, Prisma 7 en `packages/db` y flujo de migraciones | Propuesto (checkpoint 0.10) | 2026-11-19 |
+| [0009](0009-convenciones-de-datos.md) | Convenciones de datos, Prisma 7 en `packages/db` y flujo de migraciones | Aceptado | 2026-11-19 |
+| [0010](0010-harness-de-integracion.md) | Harness de pruebas de integración y migraciones contra el contenedor desechable | Aceptado | 2026-11-19 |

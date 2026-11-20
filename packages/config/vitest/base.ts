@@ -35,6 +35,12 @@ export const COVERAGE_THRESHOLDS: Readonly<Record<CoverageProfile, CoverageThres
 export const UNIT_TEST_INCLUDE = ['src/**/*.spec.ts'] as const;
 export const INTEGRATION_TEST_INCLUDE = ['test/integration/**/*.int-spec.ts'] as const;
 
+/**
+ * Tiempo máximo de cada prueba y de cada hook en integración (Q-8, sub-fase 0.11): arrancar
+ * contenedores y descargar imágenes la primera vez tarda.
+ */
+export const INTEGRATION_TIMEOUT_MS = 120_000;
+
 /** Archivos que nunca cuentan para la cobertura: pruebas, tipos y código generado. */
 export const COVERAGE_EXCLUDE = [
   '**/*.spec.ts',
@@ -55,6 +61,16 @@ export interface VitestConfigOptions {
   readonly include?: readonly string[];
   /** Archivos medidos por la cobertura (solo `unit`). Por defecto `src/**\/*.ts`. */
   readonly coverageInclude?: readonly string[];
+  /**
+   * Exclusiones de cobertura adicionales a `COVERAGE_EXCLUDE` (por ejemplo, código que solo se
+   * ejercita en integración, como el arranque de contenedores de `@repo/testing`).
+   */
+  readonly coverageExclude?: readonly string[];
+  /**
+   * Archivos de `globalSetup` de Vitest (rutas relativas al paquete o módulos), por ejemplo el
+   * arranque de contenedores de `@repo/testing`.
+   */
+  readonly globalSetup?: readonly string[];
   /**
    * Umbrales adicionales o más exigentes que los del perfil (por ejemplo, ramas en
    * `observability`). Se combinan con el perfil; nunca pueden bajar su mínimo.
@@ -108,7 +124,8 @@ export function resolveCoverageThresholds(
  * Fábrica única de configuración de Vitest para el monorepo.
  *
  * - `unit`: cobertura v8 siempre activa; por debajo del umbral, `vitest run` termina con código 1.
- * - `integration`: sin cobertura, y no falla si aún no hay suites (`passWithNoTests`).
+ * - `integration`: sin cobertura, no falla si aún no hay suites (`passWithNoTests`), tiempos de
+ *   espera de 120 s y archivos en serie (comparten los contenedores del `globalSetup`).
  */
 export function createVitestConfig(options: VitestConfigOptions): ViteUserConfig {
   const kind = options.kind ?? 'unit';
@@ -124,11 +141,19 @@ export function createVitestConfig(options: VitestConfigOptions): ViteUserConfig
       environment: 'node',
       passWithNoTests: !isUnit,
       restoreMocks: true,
+      ...(options.globalSetup === undefined ? {} : { globalSetup: [...options.globalSetup] }),
+      ...(isUnit
+        ? {}
+        : {
+            testTimeout: INTEGRATION_TIMEOUT_MS,
+            hookTimeout: INTEGRATION_TIMEOUT_MS,
+            fileParallelism: false,
+          }),
       coverage: {
         enabled: isUnit,
         provider: 'v8',
         include: [...(options.coverageInclude ?? ['src/**/*.ts'])],
-        exclude: [...COVERAGE_EXCLUDE],
+        exclude: [...COVERAGE_EXCLUDE, ...(options.coverageExclude ?? [])],
         reporter: ['text', 'json-summary'],
         thresholds: { ...resolveCoverageThresholds(options.profile, options.thresholds) },
       },

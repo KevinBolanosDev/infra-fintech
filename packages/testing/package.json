@@ -1,0 +1,41 @@
+{
+  "name": "@repo/testing",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Harness de pruebas de integración: Postgres y Redis desechables con Testcontainers, migraciones y limpieza.",
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "source": "./src/index.ts",
+      "default": "./dist/index.js"
+    },
+    "./global-setup": {
+      "types": "./dist/vitest/global-setup.d.ts",
+      "source": "./src/vitest/global-setup.ts",
+      "default": "./dist/vitest/global-setup.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "lint": "eslint --max-warnings=0 .",
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "test": "vitest run",
+    "test:int": "vitest run --config vitest.int.config.ts"
+  },
+  "devDependencies": {
+    "@repo/config": "workspace:*",
+    "vitest": "5.1.0"
+  },
+  "dependencies": {
+    "@repo/db": "workspace:*",
+    "@testcontainers/postgresql": "12.2.1",
+    "@testcontainers/redis": "12.2.1",
+    "ioredis": "6.0.0",
+    "prisma": "7.10.1",
+    "testcontainers": "12.2.1"
+  },
+  "peerDependencies": {
+    "vitest": "5.1.0"
+  }
+}

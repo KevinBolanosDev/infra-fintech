@@ -6,6 +6,7 @@ import {
   COVERAGE_THRESHOLDS,
   createVitestConfig,
   INTEGRATION_TEST_INCLUDE,
+  INTEGRATION_TIMEOUT_MS,
   resolveCoverageThresholds,
   SOURCE_CONDITION,
   UNIT_TEST_INCLUDE,
@@ -43,6 +44,47 @@ describe('createVitestConfig', () => {
     expect(config.test?.include).toEqual([...INTEGRATION_TEST_INCLUDE]);
     expect(config.test?.passWithNoTests).toBe(true);
     expect(config.test?.coverage).toMatchObject({ enabled: false });
+  });
+
+  it('en integración: 120 s por prueba y por hook, y archivos en serie', () => {
+    const config = createVitestConfig({ profile: 'utility', kind: 'integration' });
+
+    expect(INTEGRATION_TIMEOUT_MS).toBe(120_000);
+    expect(config.test).toMatchObject({
+      testTimeout: 120_000,
+      hookTimeout: 120_000,
+      fileParallelism: false,
+    });
+  });
+
+  it('las unitarias conservan los tiempos y el paralelismo por defecto de Vitest', () => {
+    const config = createVitestConfig({ profile: 'utility' });
+
+    expect(config.test?.testTimeout).toBeUndefined();
+    expect(config.test?.hookTimeout).toBeUndefined();
+    expect(config.test?.fileParallelism).toBeUndefined();
+    expect(config.test?.globalSetup).toBeUndefined();
+  });
+
+  it('pasa el globalSetup que recibe', () => {
+    const config = createVitestConfig({
+      profile: 'utility',
+      kind: 'integration',
+      globalSetup: ['./src/vitest/global-setup.ts'],
+    });
+
+    expect(config.test?.globalSetup).toEqual(['./src/vitest/global-setup.ts']);
+  });
+
+  it('añade exclusiones de cobertura sin quitar las comunes', () => {
+    const config = createVitestConfig({
+      profile: 'utility',
+      coverageExclude: ['src/containers/**'],
+    });
+
+    expect(config.test?.coverage).toMatchObject({
+      exclude: [...COVERAGE_EXCLUDE, 'src/containers/**'],
+    });
   });
 
   it('permite reemplazar archivos de prueba y archivos medidos, y añadir umbrales al perfil', () => {
